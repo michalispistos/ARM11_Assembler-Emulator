@@ -1,0 +1,30 @@
+32 Bit Words = 4 Bytes
+16 bits for memory location - each cell can hold 1 byte
+    This gives a total of 64KB of memory
+All instructions are 32 bits long - all instruction addresses are multiples of 4
+    4 cells for 1 instruction
+
+Memory locations and registers are set to NULL/0 when first switched on
+We have 17, 32 bit registers.
+    Registers 0 - 12 are general purpose
+    Registers 13, 14 are ignored
+    Register 15 is Program Counter
+    Register 16 is CPSR
+Instructions can change values in registers and memory
+NOTE: 32 bits = 4 bytes = 8 hex
+
+An all 0 instruction should tell the emulator to terminate
+Values of register and non-zero memory locations should be displayed
+
+CPSR's top 4 bits carry status flags from ALU.
+    N Z C R
+        N: Negative
+        Z: Zero
+        C: Bit carried out
+        V: Overflow
+
+Three stage pipeline:
+    1) Fetch 4 byte instruction from memory
+    2) Decode instruction
+    3) Execute instruction
+
