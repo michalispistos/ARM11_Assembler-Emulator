@@ -53,8 +53,3 @@ void printMemory(void){
     }
 }
 
-int main(void){
-    // printRegisters();
-    printMemory();
-    return 0;
-}
