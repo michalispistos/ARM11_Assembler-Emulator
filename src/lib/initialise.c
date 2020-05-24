@@ -16,10 +16,10 @@ int **startRegisters(void){
     int **registers;
     do
     {
-        registers = calloc(17, sizeof (int*));
+        registers = calloc(15, sizeof (int*));
     } while (registers == NULL);
 
-    for (int i = 0; i < 17; i++)
+    for (int i = 0; i < 15; i++)
     {
         registers[i] = startRegister();
     }   
@@ -30,7 +30,7 @@ int *startMemory(void){
     int *memory;
     do
     {
-        memory = calloc(16384, 4);
+        memory = calloc(65536, 1);
     } while (memory == NULL);
 
     return memory;
