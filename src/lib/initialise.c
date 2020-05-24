@@ -2,27 +2,12 @@
 #include <stdio.h>
 #include <stdint.h>
 
-int *startRegister(void){
-    int *register_;
+int *startRegisters(void){
+    int *registers;
     do
     {
-      register_ = calloc(1,4);
-    } while (register_ == NULL);
-
-    return register_;    
-}
-
-int **startRegisters(void){
-    int **registers;
-    do
-    {
-        registers = calloc(15, sizeof (int*));
+        registers = calloc(15, 4);
     } while (registers == NULL);
-
-    for (int i = 0; i < 15; i++)
-    {
-        registers[i] = startRegister();
-    }   
     return registers;
 }
 
@@ -36,13 +21,21 @@ int *startMemory(void){
     return memory;
 }
 
+void freeRegisters(int *registers){
+    free(registers);
+}
+
+void freeMemory(int *memory){
+    free(memory);
+}
 
 void printRegisters(void){
-    int **registers = startRegisters();
-    for (int i = 0; i < 17; i++)
+    int *registers = startRegisters();
+    for (int i = 0; i < 15; i++)
     {
-        printf("Register[%d] @ location %p contains %d\n", i, registers[i], *registers[i]);
+        printf("Register[%d] contains %d\n", i, registers[i]);
     }
+    freeRegisters(registers);
 }
 
 void printMemory(void){
@@ -51,5 +44,5 @@ void printMemory(void){
     {
         printf("Location[%d] contains %d\n", i, memory[i]);
     }
+    freeMemory(memory);
 }
-
