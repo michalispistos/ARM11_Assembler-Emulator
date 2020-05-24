@@ -46,3 +46,10 @@ void printMemory(void){
     }
     freeMemory(memory);
 }
+
+int main(void){
+	printRegisters();
+	printMemory();
+}
+
+
