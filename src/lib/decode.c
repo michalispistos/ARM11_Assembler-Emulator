@@ -12,10 +12,13 @@
         - Change to uint_32 for all to prevent any errors?
 */
 
-int mask(int no_of_bits){
+
+// Returns an integer mask of n 1s.
+uint32_t mask(int no_of_bits){
     return (1 << no_of_bits) - 1;
 }
 
+// Enum of possible commands in the ARM project
 enum Commands {
     HALT,
     DATA_PROC,
@@ -24,6 +27,8 @@ enum Commands {
     BRANCH
 };
 
+// Possible condition conditions for the ARM Project.
+// Condition codes are given in the 4 MSBs
 enum Conditions {
     EQ = 0,
     NE = 1,
@@ -34,6 +39,8 @@ enum Conditions {
     AL = 14
 };
 
+// Possible operation codes for the ARM Project
+// Only valid for a Data Processing instruction
 enum OpCodes {
     AND = 0,
     EOR = 1,
@@ -47,7 +54,17 @@ enum OpCodes {
     MOV = 13,
 };
 
-int decode(int instr){
+/*  Decode takes an instruction which is a 32 bit unsigned integer
+    We count from the LSB.
+     It checks using the following method:
+        - If 0, then halt
+        - If bit 27 is 1, then it is a branching instruction
+        - If bit 26 is 1, then it is a single data transfer instruction
+        - If bits 7 to 4 are 1001, and bits 27 to 22 are all 0, it is
+            a multiply instruction
+        - Otherwise it must be a data processing instruction
+*/
+uint32_t decode(int instr){
     if (instr == 0){
         return HALT;
     } 
@@ -61,20 +78,23 @@ int decode(int instr){
     }
 
     // NOT QUITE SURE IF THIS WORKS
-    if ((((1 << 4) - 1) & (instr >> 4) == 10) && !(((1 << 6) - 1) & (instr >> 22))){
+    if ((((instr >> 4) & mask(4)) == 9) && !((instr >> 22) & mask(6))){
         return MULTIPLY;
     }
 
     return DATA_PROC;
 }
 
-int condition(uint32_t instr){
+// Returns the 4 MSBs 
+uint32_t condition(uint32_t instr){
     return instr >> 28;
 }
 
-void halt(void){
+void halt(void);
 
-}
+// TEMPLATES FOR OTHER TYPE OF INSTRUCTION
+// HOW TO GET THE VARIOUS COMPONENTS FOR A
+// SPECIFIC TYPE OF INSTRUCION
 
 void data_proc(uint32_t instr){
     int cond = condition(instr);
@@ -138,9 +158,4 @@ void branch(uint32_t instr){
 
     printf("%d\n", cond);
     printf("%d\n", offset);
-}
-
-int main(void){
-    data_proc(0xA3CE7F0A);
-    return 0;
 }

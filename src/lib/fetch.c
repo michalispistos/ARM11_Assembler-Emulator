@@ -5,14 +5,14 @@
 // NOTE: ARM uses Little-Endian system
 // REGISTER 13 is Program Counter
 // REGISTER 14 is CPSR
-// Returns the value in Big Endian form, just like in spec but can be changed to Little Endian if needed.
+// Interprets the 4 byte instruction stored in the location addressed by PC
 
-int fetch(int *registers, int *memory){
-    int PC_value = registers[13];
-    int value = 0;
-    for (int i = PC_value + 3; i >= PC_value; i--)
+uint32_t fetch(int *registers, int *memory){
+    uint32_t PC_value = registers[13];
+    uint32_t value = 0;
+    for (int i = 3; i >= 0; i--)
     {
-        value += memory[i] << (8 * i);
+        value += memory[PC_value + i] << (8 * i);
     }
     return value; 
 }
