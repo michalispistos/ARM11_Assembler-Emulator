@@ -1,0 +1,3 @@
+
+
+int decode(int instr);
