@@ -14,7 +14,7 @@
 
 
 // Returns an integer mask of n 1s.
-uint32_t mask(int no_of_bits){
+uint32_t mask2(int no_of_bits){
     return (1 << no_of_bits) - 1;
 }
 
@@ -64,26 +64,29 @@ enum OpCodes {
             a multiply instruction
         - Otherwise it must be a data processing instruction
 */
-uint32_t decode(int instr){
+uint32_t decode(uint32_t instr){
     if (instr == 0){
         return HALT;
     } 
 
-    if (1 & instr >> 27){
+    else if (1 & instr >> 27){
         return BRANCH;
     }
     
-    if (1 & instr >> 26){
+    else if (1 & instr >> 26){
         return SDTRANS;
     }
 
     // NOT QUITE SURE IF THIS WORKS
-    if ((((instr >> 4) & mask(4)) == 9) && !((instr >> 22) & mask(6))){
+    else if ((((instr >> 4) & mask2(4)) == 9) && !((instr >> 22) & mask2(6))){
         return MULTIPLY;
     }
 
     return DATA_PROC;
 }
+
+/*
+
 
 // Returns the 4 MSBs 
 uint32_t condition(uint32_t instr){
@@ -159,3 +162,5 @@ void branch(uint32_t instr){
     printf("%d\n", cond);
     printf("%d\n", offset);
 }
+
+*/
