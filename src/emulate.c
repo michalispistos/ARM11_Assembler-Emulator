@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdbool.h>
 #include "lib/initialise.h"
 #include "lib/fetch.h"
@@ -20,26 +21,27 @@ int main(int argc, char **argv){
   printMemoryHex(memory);
   printRegisters(registers);
   printf("________________\n");
-  uint32_t instrA = NULL; // fetching
-  uint32_t instrB = NULL; // decoding
-  uint32_t instrC = NULL; //executing
+  uint32_t instrA; // fetching
+  uint32_t instrB; // decoding
+  uint32_t instrC; //executing
+  int counter = 0;
   uint32_t decoded;
   printf("R3 = %d\n", registers[3]);
 
   // FETCH DECODE EXECUTE CYCLE
 
   do {
-    if (instrC != NULL){
+    if (counter > 1){
       execute(decoded, instrC,registers,memory);
     }
-    if (instrB != NULL){
+    if (counter > 0){
       decoded = decode(instrB);
     }
     instrC = instrB;
     instrB = instrA;
     instrA = fetch(registers,memory);
     registers[15] += 4;
-
+    counter++;
   } while (instrA != 0);
   execute(decoded,instrC,registers,memory);
   decoded = decode(instrB);

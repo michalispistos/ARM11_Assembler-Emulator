@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include "decode.h"
 
 /*  Can take an instruction and display the various values depending on 
     the type of instruction. Also added a function to determine the type

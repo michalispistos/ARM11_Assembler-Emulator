@@ -1,15 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include "execute.h"
 
 // CONSTANTS TO HOLD REGISTER NUMBER OF PC AND CPSR
 const int PC = 15;
 const int CPSR = 16;
-
-// RETURNS THE CONTENTS OF THE CPSR
-int getCPSR(int *registers){
-    return registers[CPSR];
-}
 
 // Enums that represent the bit positions of flags
 enum CPSRflag{
@@ -55,12 +51,12 @@ enum OpCodes {
 };
 
 // Returns the of an instruction
-uint32_t condition(uint32_t instr){
+static uint32_t condition(uint32_t instr){
     return instr >> 28;
 }
 
 // Checks if the condition of a instruction is met
-int checkCondition(uint32_t instr, uint32_t *registers){
+static int checkCondition(uint32_t instr, uint32_t *registers){
     uint32_t CPSR_val = registers[CPSR];
     int Zset = !((CPSR_val >> Z) % 2);
     int NeqV = (((CPSR_val >> N) % 2) == ((CPSR_val >> V) % 2));
@@ -86,12 +82,12 @@ int checkCondition(uint32_t instr, uint32_t *registers){
 }
 
 // Creates a mask that will show the n LSBs
-uint32_t mask(int no_of_bits){
+static uint32_t mask(int no_of_bits){
     return (1 << no_of_bits) - 1;
 }
 
 // Returns the result if operand2 interpreted as immediate value
-uint32_t immediateVal(int operand2){
+static uint32_t immediateVal(int operand2){
     uint32_t result = operand2 & mask(8);
     uint32_t rotateTimes = (operand2 >> 8) * 2;
     result = (result >> rotateTimes) | ((result & mask(rotateTimes)) << (32 - rotateTimes));
@@ -99,7 +95,7 @@ uint32_t immediateVal(int operand2){
 }
 
 // Returns the result if operand2 interpreted as a register
-uint32_t registerOper(int operand2, int S, int *registers){
+static uint32_t registerOper(int operand2, int S, uint32_t *registers){
     uint32_t result = registers[operand2 & mask(4)];
     int carry;
     // The contents of register Rm is not modified.
@@ -141,8 +137,7 @@ uint32_t registerOper(int operand2, int S, int *registers){
 /////////////////////////////////////////////////////////////////////
 
 // DATA PROCESSING
-void executeDataProcess(int *registers, uint32_t instr){
-    int cond = condition(instr);
+static void executeDataProcess(uint32_t *registers, uint32_t instr){
     int I = (instr >> 25) % 2;
     int opcode = (instr >> 21) & mask(4);
     int S = (instr >> 20) % 2;
@@ -152,7 +147,6 @@ void executeDataProcess(int *registers, uint32_t instr){
 
     // SET OPERAND2 VALUE
     uint32_t operand2;
-    int carryOut;
     if (I){
        operand2 = immediateVal(operand);
     } else{
@@ -167,60 +161,39 @@ void executeDataProcess(int *registers, uint32_t instr){
     case AND:
         result = registers[Rn] & operand2;
         registers[Rd] = result;
-        printf("AND\n");
         break;
     case EOR:
         result = registers[Rn] ^ operand2;
         registers[Rd] = result;
-        printf("EOR\n");
         break;
     case SUB:
         result = registers[Rn] - operand2;
         registers[Rd] = result;
-        printf("SUB\n");
         break;
     case RSB:
         result = operand2 - registers[Rn];
         registers[Rd] = result;
-        printf("RSB\n");
         break;
     case ADD:
-        printf("Before ADD R3 = %d\n",registers[3]);
         result = registers[Rn] + operand2;
         registers[Rd] = result;
-        // printf("register[Rn = %d] = %d\n",Rn,registers[Rn]);
-        // printf("register[Rd = %d]\n",Rd);
-        printf("SECOND INSTRUCTION IS ADD CORRECT (result is %d)(operand is %d) \n",result,operand2);
-        if (registers[3] != 0){
-            printf("CHANGE after ADD to %d\n", registers[3]);
-        }
         break;
     case TST:
         result = registers[Rn] & operand2;
-        printf("TST\n");
         break;
     case TEQ:
         result = registers[Rn] ^ operand2;
-        printf("TEQ\n");
         break;
     case CMP:
         result = registers[Rn] - operand2;
-        printf("CMP\n");
         break;
     case ORR:
         result = registers[Rn] | operand2;
         registers[Rd] = result;
-        printf("CMP\n");
         break;
     case MOV:
-        printf("Before MOV R3 = %d\n",registers[3]);
         result = operand2;
         registers[Rd] = result;
-        // printf("register[Rd = %d]\n",Rd);
-        printf("MOV IS CORRECT (result is %d)(operand is %d)\n",result,operand2);
-                if (registers[3] != 0){
-            printf("CHANGE after MOV to %d\n", registers[3]);
-        }
         break;
     default:
         printf("ERROR! Opcode is: %d", opcode);
@@ -241,7 +214,7 @@ void executeDataProcess(int *registers, uint32_t instr){
 // MULTIPLY
 // PC not used as an operand or destination register
 // Rd will not be equal to Rm
-void executeMultiply(int* registers, uint32_t instr){
+static void executeMultiply(uint32_t* registers, uint32_t instr){
     int cond = condition(instr);
     int A = (instr >> 21) % 2;
     int S = (instr >> 20) % 2;
@@ -291,7 +264,7 @@ void executeMultiply(int* registers, uint32_t instr){
 ///////////////////////////////////////////////////////////////////
 
 // SINGLE DATA TRANSFER
-void executeSingleDataTransfer(uint32_t *registers, uint32_t *memory, uint32_t instr){
+static void executeSingleDataTransfer(uint32_t *registers, uint32_t *memory, uint32_t instr){
     int I = (instr >> 25) % 2;
     int P = (instr >> 24) % 2;
     int U = (instr >> 23) % 2;
@@ -300,7 +273,6 @@ void executeSingleDataTransfer(uint32_t *registers, uint32_t *memory, uint32_t i
     int Rd = (instr >> 12) & mask(4);
     int offset = instr & mask(12);
 
-    uint32_t result;
     if (checkCondition(instr, registers)){
         uint32_t interp_offset = I ? registerOper(offset, 0, registers) : immediateVal(offset);
         uint32_t result = Rn != PC ? registers[Rn] : registers[PC] + 8; 
@@ -327,8 +299,7 @@ void executeSingleDataTransfer(uint32_t *registers, uint32_t *memory, uint32_t i
 ///////////////////////////////////////////////////////////////////
 
 
-void executeBranch(int *registers, uint32_t instr){
-    int cond = condition(instr);
+static void executeBranch(uint32_t *registers, uint32_t instr){
     uint32_t offset = instr & mask(24);
     
     /*
@@ -363,15 +334,12 @@ void execute(uint32_t decoded, uint32_t instr, uint32_t *registers, uint32_t* me
             executeDataProcess(registers, instr);
             break;
         case MULTIPLY:
-        printf("multiply\n");
             executeMultiply(registers, instr);
             break;
         case SDTRANS:
-            printf("sdtrans\n");
             executeSingleDataTransfer(registers, memory, instr);
             break;
         case BRANCH:
-            printf("branch\n");
             executeBranch(registers, instr);
             break;
         default:
