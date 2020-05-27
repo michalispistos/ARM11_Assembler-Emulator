@@ -4,8 +4,8 @@
 #include "fetch.h"
 
 // NOTE: ARM uses Little-Endian system
-// REGISTER 13 is Program Counter
-// REGISTER 14 is CPSR
+// REGISTER 15 is Program Counter
+// REGISTER 16 is CPSR
 // Interprets the 4 byte instruction stored in the location addressed by PC
 
 uint32_t fetch(uint32_t *registers, uint32_t *memory){

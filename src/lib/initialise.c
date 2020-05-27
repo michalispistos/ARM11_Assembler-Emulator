@@ -24,10 +24,18 @@ void freeMemory(uint32_t *memory){
 }
 
 void printRegisters(uint32_t *registers){
-    for (int i = 0; i < 17; i++)
+  printf("Registers:\n");
+    for (int i = 0; i < 10; i++)
     {
-        printf("Register[%d] contains %d\n", i, registers[i]);
+      printf("$%d  :",i);
+      printf(" %10u (0x%08x)\n",registers[i],registers[i]);
     }
+    for (int i = 10; i < 13; i++){
+      printf("$%d :",i);
+      printf(" %10u (0x%08x)\n",registers[i],registers[i]);
+    }
+    printf("PC  : %10u (0x%08x)\n",registers[15],registers[15]);
+    printf("CPSR: %10d (0x%08x)\n",registers[16],registers[16]);
 }
 
 
@@ -54,14 +62,16 @@ uint32_t* initializeMemory(){
 }
 
 void printMemoryHex(uint32_t *memory){
+  printf("Non-zero memory:");
     for (int i = 0; i < num_of_addresses; i++)
     {
         if (!(i % 4)){
-          printf("\n[%d]  : %X ", i, memory[i]);
+          printf("\n0x%08x: 0x%02x", i, memory[i]);
         } else {
-          printf("%X ", memory[i]);
+          printf("%02x", memory[i]);
         }
     }
     printf("\n");
+    
 }
   

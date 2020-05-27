@@ -56,11 +56,12 @@ static uint32_t condition(uint32_t instr){
 }
 
 // Checks if the condition of a instruction is met
-static int checkCondition(uint32_t instr, uint32_t *registers){
+int checkCondition(uint32_t instr, uint32_t *registers){
     uint32_t CPSR_val = registers[CPSR];
-    int Zset = !((CPSR_val >> Z) % 2);
-    int NeqV = (((CPSR_val >> N) % 2) == ((CPSR_val >> V) % 2));
-    switch (condition(instr))
+    int Zset = ((CPSR_val >> Z) & 1);
+    int NeqV = (((CPSR_val >> N) & 1) == ((CPSR_val >> V) & 1));
+    uint32_t cond = condition(instr);
+    switch (cond)
     {
     case EQ:
         return Zset;
@@ -71,9 +72,9 @@ static int checkCondition(uint32_t instr, uint32_t *registers){
     case LT:
         return !NeqV;
     case GT:
-        return !Zset && NeqV;
+        return !Zset & NeqV;
     case LE:
-        return Zset || NeqV; 
+        return Zset | !NeqV; 
     case AL:
         return 1;
     default: 
@@ -94,37 +95,66 @@ static uint32_t immediateVal(int operand2){
     return result; 
 }
 
+
 // Returns the result if operand2 interpreted as a register
 static uint32_t registerOper(int operand2, int S, uint32_t *registers){
     uint32_t result = registers[operand2 & mask(4)];
     int carry;
+
     // The contents of register Rm is not modified.
-    uint32_t shift = operand2 >> 7;
-    uint32_t shiftType = (operand2 >> 5) & mask(2);
-    // if (!((operand2 >> 4) % 2)){
+    uint32_t shift = operand2 >> 4;
+    uint32_t shiftType = (shift >> 1) & mask(2);
+    uint32_t shiftVal;
+
+    if(shift & 1){
+        // shift specified by a register
+        shiftVal = registers[shift >> 4];
+    } else {
+        // shift by a constant amount
+        shiftVal = shift >> 3;
+    }
+
+   //  if (!((operand2 >> 4) % 2)){
         switch (shiftType)
         {
         case 0:
             // Logical shift left
-            carry = (result >> (32 - shift)) % 2;
-            result <<= shift;
+            if (shiftVal != 0){
+                carry = (result >> (32 - shiftVal)) & mask (1);
+            } else {
+                printf("A\n");
+                carry = 0;
+            }
+            result <<= shiftVal;
             break;
         case 1:
             // Logical shift right
-            carry = (result >> (shift - 1)) % 2;
+            if (shiftVal !=0){
+                carry = (result >> (shiftVal - 1)) % 2;
+            } else{
+                carry = 0;
+            }
             result >>= shift;
             break;
         case 2:
             // Arithmetic shift right
-            carry = (result >> (shift - 1)) % 2;
+            if (shiftVal != 0){
+                carry = (result >> (shiftVal - 1)) % 2; 
+            } else {
+                carry = 0;
+            }
             int endVal = result >> 31;
-            result >>= shift;
+            result >>= shiftVal;
             result |= (endVal << 31);            
             break;
         case 3:
             // Rotate right
-            carry = (result >> (shift - 1)) % 2;
-            result = (result >> shift) | (result & mask(shift) << (32 - shift));
+            if (shiftVal != 0){
+                carry = (result >> (shiftVal - 1)) % 2;
+            } else {
+                carry = 0;
+            }
+            result = (result >> shiftVal) | (result & mask(shiftVal) << (32 - shiftVal));
             break;
     // }
     }
@@ -138,9 +168,9 @@ static uint32_t registerOper(int operand2, int S, uint32_t *registers){
 
 // DATA PROCESSING
 static void executeDataProcess(uint32_t *registers, uint32_t instr){
-    int I = (instr >> 25) % 2;
+    int I = (instr >> 25) & 1;
     int opcode = (instr >> 21) & mask(4);
-    int S = (instr >> 20) % 2;
+    int S = (instr >> 20) & 1;
     int Rn = (instr >> 16) & mask(4);
     int Rd = (instr >> 12) & mask(4);
     int operand = instr & mask(12);
@@ -148,11 +178,12 @@ static void executeDataProcess(uint32_t *registers, uint32_t instr){
     // SET OPERAND2 VALUE
     uint32_t operand2;
     if (I){
-       operand2 = immediateVal(operand);
+        operand2 = immediateVal(operand);
     } else{
         //follow instructions for I not set
         operand2 = registerOper(operand,S,registers);
     }
+    
 
     // INTERPRETATION OF OPCODE
     uint32_t result;
@@ -161,51 +192,63 @@ static void executeDataProcess(uint32_t *registers, uint32_t instr){
     case AND:
         result = registers[Rn] & operand2;
         registers[Rd] = result;
+        //printf("THIS IS AND, instr: %x\n", instr);
         break;
     case EOR:
         result = registers[Rn] ^ operand2;
         registers[Rd] = result;
+        //printf("THIS IS EOR, instr: %x\n", instr);
         break;
     case SUB:
         result = registers[Rn] - operand2;
         registers[Rd] = result;
+        //printf("THIS IS SUB instr: %x\n", instr);
         break;
     case RSB:
         result = operand2 - registers[Rn];
         registers[Rd] = result;
+        //printf("THIS IS RSB instr: %x\n", instr);
         break;
     case ADD:
         result = registers[Rn] + operand2;
         registers[Rd] = result;
+        //printf("THIS IS ADD instr: %x\n", instr);
         break;
     case TST:
         result = registers[Rn] & operand2;
+       // printf("THIS IS TST instr: %x\n",instr);
         break;
     case TEQ:
         result = registers[Rn] ^ operand2;
+        //printf("THIS IS TEQ instr: %x\n",instr);
         break;
     case CMP:
         result = registers[Rn] - operand2;
+        //printf("THIS IS CMP, instr: %x ", instr);
+        //printf("Register[Rn = %d] = %x. (%x)\n",Rn,registers[Rn],operand2);
         break;
     case ORR:
         result = registers[Rn] | operand2;
         registers[Rd] = result;
+        //printf("THIS IS ORR, instr: %x\n", instr);
         break;
     case MOV:
         result = operand2;
         registers[Rd] = result;
+        //printf("THIS IS MOV, instr: %x\n", instr);
         break;
     default:
         printf("ERROR! Opcode is: %d", opcode);
     }
 
-
     // if S is set then CPSR flags are changed
     if (S){
-        int newN = (registers[CPSR] >> N) & 1;
-        int newZ = result & 0;
-        int newCPSR = ((newN << 3) & (newZ << 2) & V) << 28; 
-        registers[CPSR] = ((registers[CPSR] >> 4) << 4) & newCPSR;
+        uint32_t newN =  result >> 31;
+        uint32_t newZ = !(result ^ 0);
+        uint32_t newC = (registers[CPSR] >> C) & 1;
+        uint32_t newV = (registers[CPSR] >> V) & 1;
+        uint32_t newCPSR = (newN << 3) | (newZ << 2) | (newC << 1) | newV; 
+        registers[CPSR] =  (newCPSR << 28) | (registers[CPSR] & mask(28));
     }
 }
 
@@ -215,7 +258,6 @@ static void executeDataProcess(uint32_t *registers, uint32_t instr){
 // PC not used as an operand or destination register
 // Rd will not be equal to Rm
 static void executeMultiply(uint32_t* registers, uint32_t instr){
-    int cond = condition(instr);
     int A = (instr >> 21) % 2;
     int S = (instr >> 20) % 2;
     int Rd = (instr >> 16) & mask(4);
@@ -224,13 +266,6 @@ static void executeMultiply(uint32_t* registers, uint32_t instr){
     int Rm = instr & mask(4);
     uint32_t result;
 
-    printf("cond: %d\n", cond);
-    printf("A; %d\n", A);
-    printf("S: %d\n", S);
-    printf("Rd: %d\n", Rd);
-    printf("Rn: %d\n", Rn);
-    printf("Rs: %d\n", Rs);
-    printf("Rm: %d\n",Rm);
 
     if (A) {
         //mutiply and accumalate
@@ -240,23 +275,22 @@ static void executeMultiply(uint32_t* registers, uint32_t instr){
         result = registers[Rm] * registers[Rs];
     }
 
-        
     //saving the result to destination register
      registers[Rd] = result;      
 
     // if S is set then CPSR flags are changed
     if (S) {
         //N and Z flags of CPSR should be updated
-        //N is set to bit 31 of the result and Z is set iff the result is        
+        //N is set to bit 31 of the result and Z is set iff the result is zero     
         uint32_t newNFlag = result>>31;
         uint32_t newZFlag; 
         if(result == 0){
           newZFlag = 1;
-        }else{
+        } else {
           newZFlag = 0;
         }
         //After changing N,Z then we have to update register[16](CPSR)
-        registers[16] = (newNFlag << 3) + (newZFlag << 2) + (registers[16]>>1 & 1) + (registers[16] & 1);
+        registers[CPSR] = (newNFlag << N) | (newZFlag << Z) | (registers[CPSR] & mask(30)); 
     }    
   }
 
@@ -300,7 +334,7 @@ static void executeSingleDataTransfer(uint32_t *registers, uint32_t *memory, uin
 
 
 static void executeBranch(uint32_t *registers, uint32_t instr){
-    uint32_t offset = instr & mask(24);
+    int32_t offset = instr & mask(24);
     
     /*
     Branch
@@ -309,14 +343,18 @@ static void executeBranch(uint32_t *registers, uint32_t instr){
     Mbytes. The offset will take into account the effect of the pipeline (i.e. PC is 8 bytes ahead of the
     instruction that is being executed).
     */
+    //printf("Z: %d\n", (registers[CPSR] >> Z)&1);
+    //printf("CONDITION IN BRANCH: %x\n", instr);
 
- 
     offset = offset << 2;
     int firstBit = offset >> 25;
     if (firstBit){
         offset = offset | (mask(6)<<26);
     }
+    //printf("OFFSET IS %d\n",offset);
+    //printf("IN BRANCH Instr is %x\n", instr);
     registers[PC] += offset;
+    //printf("IN BRANCH N = %d, V = %d\n", registers[CPSR] >> N & 1, registers[CPSR] >> V & 1);
 }
 
 

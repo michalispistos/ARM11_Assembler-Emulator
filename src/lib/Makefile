@@ -10,7 +10,7 @@ all: $(BUILD)
 clean:
 	/bin/rm -f $(BUILD) *.o clone
 
-$(LIB): $(LIBOBJS)
+$(LIB): 	$(LIBOBJS)
 	ar rcs $(LIB) $(LIBOBJS)
 
 decode.o: decode.h

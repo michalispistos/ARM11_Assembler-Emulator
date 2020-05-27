@@ -18,43 +18,40 @@ int main(int argc, char **argv){
   uint32_t *registers = startRegisters();
   loadFile(memory,argv[1]);
 
-  printMemoryHex(memory);
-  printRegisters(registers);
-  printf("________________\n");
-  uint32_t instrA; // fetching
-  uint32_t instrB; // decoding
-  uint32_t instrC; //executing
+
+  uint32_t instrA = 2; // fetching
+  uint32_t instrB = 2; // decoding
+  uint32_t instrC = 2; //executing
   int counter = 0;
-  uint32_t decoded;
-  printf("R3 = %d\n", registers[3]);
+  int tempcounter = 0;
+  uint32_t decoded = 5;
 
   // FETCH DECODE EXECUTE CYCLE
 
   do {
-    if (counter > 1){
+    if (tempcounter>2 && counter > 1){
       execute(decoded, instrC,registers,memory);
+      if (checkCondition(instrC,registers) && decoded == 4){
+        instrB = instrA;
+        counter = 1;
+        continue;
+      }
     }
     if (counter > 0){
       decoded = decode(instrB);
     }
     instrC = instrB;
     instrB = instrA;
-    instrA = fetch(registers,memory);
-    registers[15] += 4;
+    if (instrA != 0){
+      instrA = fetch(registers,memory);
+    }
+    if (instrC != 0){
+      registers[15] += 4;
+    }
     counter++;
-  } while (instrA != 0);
-  execute(decoded,instrC,registers,memory);
-  decoded = decode(instrB);
-  execute(decoded,instrB,registers,memory);
-  registers[15] += 4;
+    tempcounter++;
+  } while (instrC != 0);
   
-  //
-
-  printMemoryHex(memory);
   printRegisters(registers);
-  freeMemory(memory);
-  freeRegisters(registers);
-  return 0;
-  
-  }
-
+  printMemoryHex(memory);
+}

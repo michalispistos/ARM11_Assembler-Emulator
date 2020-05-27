@@ -1,6 +1,6 @@
 #ifndef EXECUTE_H
 #define EXECUTE_H
-//int checkCondition(uint32_t instr, uint32_t *registers);
+int checkCondition(uint32_t instr, uint32_t *registers);
 
 //void executeDataProcess(int *registers, uint32_t instr);
 
