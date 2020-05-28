@@ -72,7 +72,7 @@ int checkCondition(uint32_t instr, uint32_t *registers){
     case LT:
         return !NeqV;
     case GT:
-        return !Zset & NeqV;
+        return (!Zset )& NeqV;
     case LE:
         return Zset | !NeqV; 
     case AL:
@@ -97,7 +97,7 @@ static uint32_t immediateVal(int operand2){
 
 
 // Returns the result if operand2 interpreted as a register
-static uint32_t registerOper(int operand2, int S, uint32_t *registers){
+static uint32_t registerOper(int operand2, int S, uint32_t *registers, uint32_t *newC){
     uint32_t result = registers[operand2 & mask(4)];
     int carry;
 
@@ -122,7 +122,6 @@ static uint32_t registerOper(int operand2, int S, uint32_t *registers){
             if (shiftVal != 0){
                 carry = (result >> (32 - shiftVal)) & mask (1);
             } else {
-                printf("A\n");
                 carry = 0;
             }
             result <<= shiftVal;
@@ -159,7 +158,7 @@ static uint32_t registerOper(int operand2, int S, uint32_t *registers){
     // }
     }
     if (S){
-        registers[CPSR] = carry ? registers[CPSR] | (1 << C) : registers[CPSR] & ~(1 << C);
+        *newC = carry & 1;
     }
     return result;
 }
@@ -174,6 +173,7 @@ static void executeDataProcess(uint32_t *registers, uint32_t instr){
     int Rn = (instr >> 16) & mask(4);
     int Rd = (instr >> 12) & mask(4);
     int operand = instr & mask(12);
+    uint32_t newC;
 
     // SET OPERAND2 VALUE
     uint32_t operand2;
@@ -181,7 +181,7 @@ static void executeDataProcess(uint32_t *registers, uint32_t instr){
         operand2 = immediateVal(operand);
     } else{
         //follow instructions for I not set
-        operand2 = registerOper(operand,S,registers);
+        operand2 = registerOper(operand,S,registers,&newC);
     }
     
 
@@ -202,16 +202,21 @@ static void executeDataProcess(uint32_t *registers, uint32_t instr){
     case SUB:
         result = registers[Rn] - operand2;
         registers[Rd] = result;
+        //printf("SUB!\n");
+        //newC = result >> 31;
+        newC = ((int32_t) result >=0);
         //printf("THIS IS SUB instr: %x\n", instr);
         break;
     case RSB:
         result = operand2 - registers[Rn];
         registers[Rd] = result;
+        newC = result >> 31;
         //printf("THIS IS RSB instr: %x\n", instr);
         break;
     case ADD:
         result = registers[Rn] + operand2;
         registers[Rd] = result;
+        newC = result >> 31;
         //printf("THIS IS ADD instr: %x\n", instr);
         break;
     case TST:
@@ -224,6 +229,8 @@ static void executeDataProcess(uint32_t *registers, uint32_t instr){
         break;
     case CMP:
         result = registers[Rn] - operand2;
+        newC = result >> 31;
+        newC = ((int32_t) result >=0 );
         //printf("THIS IS CMP, instr: %x ", instr);
         //printf("Register[Rn = %d] = %x. (%x)\n",Rn,registers[Rn],operand2);
         break;
@@ -245,7 +252,6 @@ static void executeDataProcess(uint32_t *registers, uint32_t instr){
     if (S){
         uint32_t newN =  result >> 31;
         uint32_t newZ = !(result ^ 0);
-        uint32_t newC = (registers[CPSR] >> C) & 1;
         uint32_t newV = (registers[CPSR] >> V) & 1;
         uint32_t newCPSR = (newN << 3) | (newZ << 2) | (newC << 1) | newV; 
         registers[CPSR] =  (newCPSR << 28) | (registers[CPSR] & mask(28));
@@ -297,6 +303,22 @@ static void executeMultiply(uint32_t* registers, uint32_t instr){
 
 ///////////////////////////////////////////////////////////////////
 
+void toMem(uint32_t instr, uint32_t *memory, uint32_t address){
+    for (int i = 0; i < 4; i++)
+    {
+        memory[address + i] = 15 & (instr >> 8 * i);
+    }
+}
+
+uint32_t toReg(uint32_t address, uint32_t *memory){
+    uint32_t res = 0;
+    for (int i = 3; i >= 0; i--)
+    {
+        res += memory[address + i] << (8 * i);
+    }
+    return res;
+}
+
 // SINGLE DATA TRANSFER
 static void executeSingleDataTransfer(uint32_t *registers, uint32_t *memory, uint32_t instr){
     int I = (instr >> 25) % 2;
@@ -308,23 +330,39 @@ static void executeSingleDataTransfer(uint32_t *registers, uint32_t *memory, uin
     int offset = instr & mask(12);
 
     if (checkCondition(instr, registers)){
-        uint32_t interp_offset = I ? registerOper(offset, 0, registers) : immediateVal(offset);
-        uint32_t result = Rn != PC ? registers[Rn] : registers[PC] + 8; 
-        result += U ? interp_offset : - interp_offset;
-        
-        if (P){
-            if (L){
-                registers[Rd] = memory[result];
+        uint32_t interp_offset = I ? registerOper(offset, 0, registers, (uint32_t *) 1) : immediateVal(offset);
+        //if PC used as base register(Rn), then Rn must contain instruction's address + 8 bytes
+        uint32_t result = (Rn != PC) ? registers[Rn] : registers[PC] - 4; 
+     if (P){
+         //offset is added/subtracted to base register before transferring data
+         //will not change value of base register
+            result += U ? interp_offset : - interp_offset;
+            if (result >= (1 << 16)){
+                printf("Error: Out of bounds memory access at address 0x%08x\n", result);
             } else {
-                memory[result] = registers[Rd];
+                if (L){
+                //word loaded from memory
+                registers[Rd] = toReg(result, memory);
+                } else {
+                //word stored into memory
+                toMem(registers[Rd], memory, result);
+                }
             }
         } else {
-            if (L){
-                registers[Rd] = memory[registers[Rn]];
+            if (result >= (1 << 16)){
+                printf("Error: Out of bounds memory access at address 0x%08x\n", result);
             } else {
-                memory[registers[Rn]] = registers[Rd];
-            }
-            registers[Rn] = result;
+                if (L){
+                //word loaded from memory
+                registers[Rd] = toReg(registers[Rn], memory);
+                } else {
+                //word stored into memory
+                toMem(registers[Rd], memory, registers[Rn]);
+                }
+            //offset is added/subtracted to base register after transferring data
+            //change contents of base register by offset
+            registers[Rn] += U ? interp_offset : - interp_offset;
+        }
         }
     }
 }
@@ -353,7 +391,7 @@ static void executeBranch(uint32_t *registers, uint32_t instr){
     }
     //printf("OFFSET IS %d\n",offset);
     //printf("IN BRANCH Instr is %x\n", instr);
-    registers[PC] += offset;
+    registers[PC] = ((int32_t) registers[PC]) + offset;
     //printf("IN BRANCH N = %d, V = %d\n", registers[CPSR] >> N & 1, registers[CPSR] >> V & 1);
 }
 

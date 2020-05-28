@@ -1,10 +1,11 @@
 CC      = gcc
-CFLAGS  = -Wall -g -std=c99 -D_POSIX_SOURCE -D_BSD_SOURCE -Ilib
-#-pedantic-Werror 
+CFLAGS  = -Wall -g -std=c99 -pedantic -Werror -D_DEFAULT_SOURCE -Ilib
 LDLIBS = -Llib -lemulate
-BUILD = libs emulate
+BUILD  = libs emulate
 
-all: $(BUILD)
+all:
+	make clean
+	make $(BUILD)
 
 .SUFFIXES: .c .o
 

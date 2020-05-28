@@ -1,9 +1,9 @@
 CC = gcc
-CFLAGS = -Wall -g -std=c99 -D_POSIX_SOURCE -D_BSD_SOURCE 
-#-Werror -pedantic
+CFLAGS = -Wall -g -std=c99 -Werror -pedantic -D_DEFAULT_SOURCE
 LIB =  libemulate.a
 LIBOBJS = decode.o execute.o initialise.o fetch.o
 BUILD = $(LIB)
+
 
 all: $(BUILD)
 
@@ -20,4 +20,3 @@ execute.o: execute.h
 fetch.o: fetch.h
 
 initialise.o: initialise.h
-
