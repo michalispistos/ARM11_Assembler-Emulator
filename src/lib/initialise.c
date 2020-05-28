@@ -88,7 +88,7 @@ void printMemoryHex(uint32_t *memory){
 
 void printMemoryHex(uint32_t *memory){
   printf("Non-zero memory:\n");
-  for (int i = 0; i < num_of_addresses / 4; i++)
+  for (int i = 0; i < 1 << 10; i++) // Need to change, currently checks up to some large number
   {
     uint32_t base = 4 * i;
     if (memory[base] | memory[base + 1] | memory[base + 2] | memory[base + 3]){
