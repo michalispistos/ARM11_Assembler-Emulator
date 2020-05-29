@@ -1,9 +1,9 @@
-CC      = gcc
-CFLAGS  = -Wall -g -std=c99 -pedantic -Werror -D_DEFAULT_SOURCE -Ilib
-LDLIBS = -Llib -lemulate
+CC     = gcc
+CFLAGS = -Wall -g -std=c99 -pedantic -Werror -D_DEFAULT_SOURCE -Iemulate_utils
+LDLIBS = -Lemulate_utils -lpipeline
 BUILD  = libs emulate
 
-all:
+all: 
 	make clean
 	make $(BUILD)
 
@@ -13,20 +13,14 @@ all:
 
 clean:
 	/bin/rm -f $(BUILD) *.o clone
-	cd lib; make clean
-	#rm -f $(wildcard *.o)
-	#rm -f assemble
-	#rm -f emulate
+	cd emulate_utils; make clean
 
 libs: 	
-	cd lib; make
+	cd emulate_utils; make
 
 emualte: emulate.o
 
-
 #assemble: assemble.o
 
-#emulate: emulate.o
-#	$(CC) emulate.c lib/initialise.c lib/fetch.c lib/decode.c lib/execute.c -o emulate
 
 
