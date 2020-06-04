@@ -1,74 +1,92 @@
-\documentclass{article}
+\documentclass[a4paper]{article}
 \usepackage[utf8]{inputenc}
+\usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
 
-\title{Project Report Part I}
-\author{Anthony Lee\\ Ezra Sitorus\\ Michalis Pistos\\Sarveen Santhiramohan}
+\title{ARM Checkpoint}
+\author{Sarveen Santhiramohan (Group Leader) \\ Anthony Lee\\ Ezra Sitorus\\ Michalis Pistos}
 \date{May/June 2020}
 
 \begin{document}
 \maketitle
 
-\section{Part I}
-
-\begin{enumerate}
-    \item A statement on how you have split the work between group members and how you are coordinating
-     your work.
-    \item A discussion on how well you think the group is working and how you imagine it might need to
-     change for the later tasks.
-    \item How you have structured your emulator, and what bits you think you will be able to reuse for the
-     assembler.
-    \item A discussion on implementation tasks that you think you will find difficult/challenging later on,
-     and how you are working to mitigate these.
-\end{enumerate}
-
-\bigskip
-\bigskip
-\subsection{Splitting the work and Coordination}
- We decided to split the project in separate parts that were not dependent to each other so 
- we can have people working at different things simultaneously and save a lot of time.
- However, in order to keep up with each other and not constantly have to push and pull 
- we decided to use VSCode which has a live share option. This allowed us 
- to work at the same time on the same code, which was really helpful as we could discuss and modify 
- parts of the project together. VSCode allows us to work together on the same files so it eliminated the need
- to create separate branches and commit and push separately. It also has a text chat and voice call that made
- discussing, editing and collaborating much easier.
+\subsection*{1. Splitting the work and Coordination}
+ We decided to split the project into separate parts that were not dependent on each other so we can have people
+ working on different things simultaneously and save a lot of time. For example, to implement the execute function,
+ we split it into functions for each instruction type as we could create these functions without much knowledge of how the other
+ functions work. 
+\\ \\
+ We used the LiveShare extension on VSCode to enable all group members to collaborate on the 
+ project at the same time. This allowed us to work together on the same files, eliminating the need
+ to continuously commit and push/pull the repository. It also has a built-in text and voice chat that made 
+ discussing, editing and collaborating much simpler. This made it very convenient to work on the same functions
+ as well, especially when debugging. 
+\\ \\
+ Every team member was assigned to coding the execute function for one type of data instruction. Data Processing,
+ Multiply, Single Data Transfer and Branch were coded by Sarveen, Anthony, Ezra and Michalis respectively.
+ In addition, the binary loader and memory initialisation were made by Sarveen, Michalis and Anthony whilst 
+ the register initialisation were made by Ezra. Michalis worked on making suitable Makefiles whilst Sarveen wrote the 
+ function for the three-stage pipeline as well as the main function. Ezra also made the registerOperand function 
+ to calculate the shifted registers. We all worked together on debugging which made it easier and quicker 
+ to find the mistakes in our code.
 
 \bigskip
-\subsection{Teamwork}
-All group members took this project very seriously and everyone contributed significantly so that we 
-have the expected and desirable result. Moreover, the fact that we split the project and were able to work 
-and update our code at the same time made us achieve maximum productivity. Furthermore, everyone was freely and 
-without pressure expressing his ideas and opinions which allowed us to view other sides of the same problem pick 
-the optimal solution and also benefit from being exposed to different ways of thinking. For the next part, we should
-add comments on our code to explain how things work so when the other group members come for debugging it will be much 
-to understand. Another thing we could do is to discuss the general idea of how a certain section should be done 
- before jumping straight into it as we often found ourselves redoing things because we did not understand the
-spec yet. 
+\subsection*{2. Teamwork}
+
+Anthony: "I believe our group worked incredibly well together, and the implementation of using the LiveShare extension
+        on VSCode so we could collaborate in real-time really helped as this allowed us to continuously
+        contribute different ideas and ask questions where we were unsure, making it feel like a true collaborative project.
+        For the later tasks, I don't think much has to be changed as I believe this method was very efficient.
+\\ \\
+Ezra: "I am happy with the progress the team is making. Using VSCode has made it easier for everyone to chip in and 
+             contribute to various parts of the program. For later parts, maybe we could have a bit more discussion before coding."
+\\ \\
+Michalis: "I am really happy with my team. Everyone took this very seriously and contributed significantly so            
+we could achieve the desired outcome. Everyone was also really open to hear others' opinions, which helped us in choosing the optimal 
+solution and solving a problem faster. Moreover, working with others was very beneficial for me as I've learned a lot of
+new things. I don't think that there is something that needs changing as so far we are cooperating very well with each other."
+\\ \\
+Sarveen: "Everyone in our group has given the project maximum attention and worked tirelessly to ensure that our 
+emulator not only works but works well. No matter the complexity of the tasks, by working together we can overcome any challenge. Furthermore, the communication between the group members are always effective and efficient
+and this has allowed us to work on the project without any unnecessary delay."
 
 \bigskip
-\subsection{Structure of the Emulator and Useful Bits for Part II}
-In our src directory we have a file called emulate.c, which has a main method, 
-where we just load a file with instructions and execute the pipeline. 
-Then we have created a sub-directory called emulate{\_}utils in src in which 
-we have placed the files with more specific tasks as well as their headers. 
-We have created a file called initialise for initialising the memory and the registers, 
-a file called pipeline for fetching, decoding and executing the instructions and a file containing utility methods for pipeline. 
-Finally we have created two Makefiles one for the emulate{\_}utils sub-directory where we create a library 
+\subsection*{3. Structure of the Emulator and Useful Reusable Components for Part II}
+
+In our src directory we have a file called emulate.c containing the main function, 
+which loads the given binary file and executes the pipeline using the execute{\_}pipeline function. 
+Then we have created a sub-directory called emulate{\_}utils has the library containing all the functions needed
+for emulate. We have created and populated initialise.c with functions for initialising the memory and registers
+, as well as a function to load a given binary file into memory. Furthermore, we have a file called pipeline.c
+with functions to fetch, decode and execute instructions, and a file containing utility functions for pipeline
+called pipeline{\_}utils. Finally we have created two Makefiles: one for the emulate{\_}utils sub-directory where we create a library 
 and compile our files and then a Makefile for src where we use the the compiled version of the files from our library 
-to create an executable file for our program. Our emulator in Part I recieves a binary file and executes the instructions, 
-while the assembler in part II takes a .s file and converts it to a binary file so our emulator can read it. Our emulator 
-will be really useful for part II as we can use it to test the correctness of our assembler. The function we use to read the 
-binary file will also be useful for getting the text from the assembly code and the certain words in each instruction.
+to create an executable file for our program. Our emulator in Part I receives a binary file and executes the instructions, 
+while the assembler in part II takes in a .s file and converts it into a binary file so our emulator can read it. Our emulator 
+will be really useful for part II as we can use it to test whether the assembler has written to the file and processed
+the assembly instructions correctly. Furthermore, we can use the loadFile function from part I to read the instructions
+from the assembly file and store it in an array. We will need slight adjustments to the function, however, as the assembly
+instructions will not be in binary.
 
 \bigskip
-\subsection{Discussion on implementing difficult tasks in later parts}
-Our aim for the second task is to create the assembler that will convert
-assembly code to binary code so it can be used from our machine. The most 
-difficult part about this will be our small experience on that topic as we have
-very recently introduced to it. However, our interaction with the first part gave us a good idea of 
-the project and will significantly reduce understanding time for part II. We are looking to implement
-the two pass method which requires us to make a symbol table abstract data type.
-Moreover, we are working very well as a team, which will make a lot easier
- the treatment of any challenge we might face in the future.
+\subsection*{4 . Discussion on implementing difficult tasks in later parts}
+
+Anthony: "For the next part, we have to create an assembler to convert ARM assembly code into binary code. 
+               I believe what I will find difficult in this part is dealing with assembly language as this
+               is a fairly new topic for JMCs. Therefore what I think will help me is having a thorough 
+               understanding of computer architecture, and reading
+               the specification thoroughly to understand what it wants us to implement."
+\\ \\
+Ezra: "I think the difficult part of the assembler is the process of getting the various components in each assembly 
+            instruction. The conversion process seems to be similar to the execution process in the emulator."
+\\ \\
+Michalis: "I think I might face some difficulties in the later parts since we are asked to create an assembler. 
+This is a topic that I don't have much experience on as we've just learnt about them in our Architecture course. However, 
+I think discussing it with my team will help me understand the topic and what exactly we have to implement better."
+\\ \\
+Sarveen: "I think that the main difficulty with implementing the assembler is the function to tokenize the input
+and pass it to the correct assemble function for that input. We will try and solve this by using function pointers
+and data structures such as a hash table. It helps to have four minds working on this because, as we have
+observed during Part I, we are able to come up with solutions that are much better than something we could come up
+with individually."
 
 \end{document}
