@@ -1,21 +1,74 @@
-\documentclass[11pt]{article}
+\documentclass{article}
+\usepackage[utf8]{inputenc}
 
-\usepackage{fullpage}
+\title{Project Report Part I}
+\author{Anthony Lee\\ Ezra Sitorus\\ Michalis Pistos\\Sarveen Santhiramohan}
+\date{May/June 2020}
 
 \begin{document}
-
-\title{Our Extension...}
-\author{TODO}
-
 \maketitle
 
-\section{Introduction}
+\section{Part I}
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
+\begin{enumerate}
+    \item A statement on how you have split the work between group members and how you are coordinating
+     your work.
+    \item A discussion on how well you think the group is working and how you imagine it might need to
+     change for the later tasks.
+    \item How you have structured your emulator, and what bits you think you will be able to reuse for the
+     assembler.
+    \item A discussion on implementation tasks that you think you will find difficult/challenging later on,
+     and how you are working to mitigate these.
+\end{enumerate}
+
+\bigskip
+\bigskip
+\subsection{Splitting the work and Coordination}
+ We decided to split the project in separate parts that were not dependent to each other so 
+ we can have people working at different things simultaneously and save a lot of time.
+ However, in order to keep up with each other and not constantly have to push and pull 
+ we decided to use VSCode which has a live share option. This allowed us 
+ to work at the same time on the same code, which was really helpful as we could discuss and modify 
+ parts of the project together. VSCode allows us to work together on the same files so it eliminated the need
+ to create separate branches and commit and push separately. It also has a text chat and voice call that made
+ discussing, editing and collaborating much easier.
+
+\bigskip
+\subsection{Teamwork}
+All group members took this project very seriously and everyone contributed significantly so that we 
+have the expected and desirable result. Moreover, the fact that we split the project and were able to work 
+and update our code at the same time made us achieve maximum productivity. Furthermore, everyone was freely and 
+without pressure expressing his ideas and opinions which allowed us to view other sides of the same problem pick 
+the optimal solution and also benefit from being exposed to different ways of thinking. For the next part, we should
+add comments on our code to explain how things work so when the other group members come for debugging it will be much 
+to understand. Another thing we could do is to discuss the general idea of how a certain section should be done 
+ before jumping straight into it as we often found ourselves redoing things because we did not understand the
+spec yet. 
+
+\bigskip
+\subsection{Structure of the Emulator and Useful Bits for Part II}
+In our src directory we have a file called emulate.c, which has a main method, 
+where we just load a file with instructions and execute the pipeline. 
+Then we have created a sub-directory called emulate{\_}utils in src in which 
+we have placed the files with more specific tasks as well as their headers. 
+We have created a file called initialise for initialising the memory and the registers, 
+a file called pipeline for fetching, decoding and executing the instructions and a file containing utility methods for pipeline. 
+Finally we have created two Makefiles one for the emulate{\_}utils sub-directory where we create a library 
+and compile our files and then a Makefile for src where we use the the compiled version of the files from our library 
+to create an executable file for our program. Our emulator in Part I recieves a binary file and executes the instructions, 
+while the assembler in part II takes a .s file and converts it to a binary file so our emulator can read it. Our emulator 
+will be really useful for part II as we can use it to test the correctness of our assembler. The function we use to read the 
+binary file will also be useful for getting the text from the assembly code and the certain words in each instruction.
+
+\bigskip
+\subsection{Discussion on implementing difficult tasks in later parts}
+Our aim for the second task is to create the assembler that will convert
+assembly code to binary code so it can be used from our machine. The most 
+difficult part about this will be our small experience on that topic as we have
+very recently introduced to it. However, our interaction with the first part gave us a good idea of 
+the project and will significantly reduce understanding time for part II. We are looking to implement
+the two pass method which requires us to make a symbol table abstract data type.
+Moreover, we are working very well as a team, which will make a lot easier
+ the treatment of any challenge we might face in the future.
 
 \end{document}
