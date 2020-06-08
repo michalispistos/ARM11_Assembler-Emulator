@@ -1,0 +1,27 @@
+1) A data structure that maps strings to integers;
+    Or a linked list that holds nodes which contains strings to integers;
+    Traverse the list until we find the string and extract the integers
+    This structure can be used for both labels AND opcodes
+    
+    For extra marks we can use:
+        Trees? - decreases lookup time. We also don't need to remove any item;
+
+2) In the beginning we create our map and initialise with values for opcodes
+    of different instructions. We then traverse through the entire file and everytime
+    we see a label (a word that ends with a :), we add that label's address/lineno into
+    the map
+
+3) We traverse through the list a second time, this time creating an array of integers.
+    We translate each string line into an integer and append it onto the array of integers.
+
+    We can tell what type of instruction things are by their first command word - look up in
+    spec. Using the lookup table we can very easily translate each command into their instruction.
+    Obviously for different types of instructions the arguments can be formatted differently (they
+    all seem to be delimited by commas).
+
+    I have no idea if we need to make seperate functions for different instruction types, or we can just
+    use one.
+
+4) Once the array is complete, we can append each item onto the output file.
+    Another optimisation we can do is to remove the list and write the result
+    of each translation directly onto the list.
