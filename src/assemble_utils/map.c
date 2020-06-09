@@ -28,19 +28,25 @@ map *createMap(){
 }
 
 // Adds item to the front of the data structure
-map *addMap(map *root, const char *word, uint32_t code){
-    if(root->code == 0){
+void addMap(map *root, const char *word, uint32_t code){
+    if(!(root->word[0])){
        strcpy(root->word,word);
        root->code = code;
-       return root; 
+       return; 
     }
     map* new = createMap();
     strcpy(new->word,word);
     new->code = code;
-    if(root){
-        new->next = root;
+    if (root->next){
+        new->next = root->next;
+        root->next = new;
+    } else {
+        root->next = new;
     }
-    return new;
+    //if(root){
+    //    new->next = root;
+    //}
+    //return new;
 }
 
 // Applies a function to each element in a map
@@ -77,17 +83,22 @@ void printMap(map* root){
     }
 }
 
-// Testing map using main - seems to word
+uint32_t getCode(map* root, char* word){
+    if(root->word == word){
+        return root->code;
+    }
+
+    return getCode(root->next,word);
+}
+
+// Testing map using main - seems to work
 /*
 int main(void){
     map *root = createMap();
     root = addMap(root,"A",1);
     root = addMap(root, "B", 16);
     root = addMap(root, "C", 256);
-    functionMap(root,printWord);
-    printf("\n");
-    functionMap(root, printCode);
-    printf("\n");
+    printMap(root);
     destroyMap(root);
     return EXIT_SUCCESS;
     
