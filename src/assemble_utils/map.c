@@ -3,29 +3,40 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#define MAX_CHAR_LENGTH (511)
+
 typedef struct Map {
-    char word[511]; // From spec
+    char word[MAX_CHAR_LENGTH]; // From spec
     uint32_t code; // Can either be the instruction code or instruction address
     struct Map *next;
 } map;
 
 
 // Creates a new element
-map *createMap(const char *word, uint32_t code){
+map *createMap(){
     map *res = (map *) malloc(sizeof(map));
     if (!res){
         perror("createMap, NULL pointer allocated");
         exit(EXIT_FAILURE);
     }
 
+    /*
     strcpy(res->word, word);
     res->code = code;
+    */
     return res;
 }
 
 // Adds item to the front of the data structure
 map *addMap(map *root, const char *word, uint32_t code){
-    map *new = createMap(word, code);
+    if(root->code == 0){
+       strcpy(root->word,word);
+       root->code = code;
+       return root; 
+    }
+    map* new = createMap();
+    strcpy(new->word,word);
+    new->code = code;
     if(root){
         new->next = root;
     }
@@ -54,16 +65,31 @@ void printWord(const char *word, const uint32_t code){
 }
 
 // Prints the code an element contains
-void printCode(const char *word, const uint32_t code){
-    printf("[0x%08x] ", code);
+void printCode(const char* word,const uint32_t code){
+    printf("%d", code);
+    //[0x%08x]
+}
+
+void printMap(map* root){
+    if(root){
+    printf("%s-%u\n",root->word,root->code);
+    printMap(root->next);
+    }
 }
 
 // Testing map using main - seems to word
+/*
 int main(void){
-    map *root = createMap("A", 1);
+    map *root = createMap();
+    root = addMap(root,"A",1);
     root = addMap(root, "B", 16);
     root = addMap(root, "C", 256);
+    functionMap(root,printWord);
+    printf("\n");
     functionMap(root, printCode);
+    printf("\n");
     destroyMap(root);
     return EXIT_SUCCESS;
+    
 }
+*/

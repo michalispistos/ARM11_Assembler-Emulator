@@ -20,7 +20,7 @@ libs:
 
 emualte: emulate.o
 
-#assemble: assemble.o
+assemble: assemble.o
 
 
 
