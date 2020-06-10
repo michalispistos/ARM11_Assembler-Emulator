@@ -10,11 +10,17 @@
 
 
 int main(int argc, char **argv) {
+  if (argc != 3) {
+    perror("incorrect number of arguments.");
+    exit(EXIT_FAILURE);
+  }
   map* res = createSymbolTable(argv[1]);
   preReadCodes(res);
-  printMap(res);
   int num_of_instructions = 0;
   uint32_t *contents = secondPass(argv[1],res, &num_of_instructions);
   writeFile(contents,num_of_instructions,argv[2]);
+  for (int i = 0; i < num_of_instructions; i++) {
+    printf("%x\n", contents[i]);
+  }
   return EXIT_SUCCESS;
 }

@@ -48,13 +48,16 @@ uint32_t *secondPass(char* filename, map *symbols, int *num_of_instructions){
     N = 0;
     line[strcspn(line,"\n")] = '\0';
     char **tokens = tokenizer(line, &N);
+    if (isLabel(tokens[0])){
+        continue;
+    }
     assemble_function func = get_function(symbols,tokens[0]);
     uint32_t result = (func)(symbols,tokens,N,code);
-    contents[code/3] = result;
+    contents[code/4] = result;
     //freeTokens(tokens,&N);
     code+=4;
   }
   fclose(input);
-  *num_of_instructions = code/3;
+  *num_of_instructions = code/4;
   return contents;
 }

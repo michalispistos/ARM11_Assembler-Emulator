@@ -18,6 +18,7 @@
 3 blt,11
 3 bgt,12
 3 ble,13
+3 b, 14
 3 al,14
 4 andeq,0
 4 lsl,0

@@ -94,15 +94,15 @@ uint32_t assemble_branch(map *symbols, char **tokens, int N, uint32_t instr_addr
  }else if(!strcmp(tokens[0],"bne")){
     opcode = 1;
  }else if(!strcmp(tokens[0],"bge")){
-    opcode = 1010;
+    opcode = 10;
  }else if(!strcmp(tokens[0],"blt")){
-    opcode = 1011;
+    opcode = 11;
  }else if(!strcmp(tokens[0],"bgt")){
-    opcode = 1100;
+    opcode = 12;
  }else if(!strcmp(tokens[0],"ble")){
-    opcode = 1101;
+    opcode = 13;
  }else{
-    opcode = 1110;
+    opcode = 14;
  }
  
  res = opcode<<28 | 10<<24;
