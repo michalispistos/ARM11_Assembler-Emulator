@@ -1,7 +1,7 @@
 CC      = gcc
 CFLAGS  = -Wall -g -std=c99 -Werror -pedantic -D_DEFAULT_SOURCE
-LIB     = libemulate_utils.a
-LIBOBJS = pipeline.o pipeline_utils.o initialise.o
+LIB     = libassemble_utils.a
+LIBOBJS = assemble_instr.o map.o parser.o two_pass.o
 BUILD   = $(LIB)
 
 
@@ -13,10 +13,11 @@ clean:
 $(LIB): 	$(LIBOBJS)
 	ar rcs $(LIB) $(LIBOBJS)
 
-pipeline.o: pipeline.h
+assemble_instr.o: assemble_instr.c
 
-pipeline_utils.o: pipeline_utils.h
+map.o: map.c
 
-initialise.o: initialise.h
+parser.o: parser.c
 
+two_pass.o: two_pass.c
 
