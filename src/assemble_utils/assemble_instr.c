@@ -68,7 +68,9 @@ int get_register_address(char *registers) {
     //res = calculate(res);
     //printf("RES IS %x %d\n",res, immediateVal(res));
     return res;
-  } 
+  } else if (registers[0] == '[') {
+    memmove(registers,registers+1,strlen(registers));
+  }
   //register
   memmove(registers, registers + 1, strlen(registers));
   int res = strtol(registers,NULL,10);
@@ -165,8 +167,17 @@ uint32_t assemble_sdt(map *symbols, char **tokens, int N, uint32_t instr_address
   int code = getCode(symbols, word);
   res |= code << 20; // Add the symbol to the result
 
+  //temp
+  char tempexpr[15];
+  char temprd[10];
+  strcpy(tempexpr,tokens[2]);
+  strcpy(temprd,tokens[1]);
+  //temp
+
+
   int Rd = get_register_address(tokens[1]);
   res |= Rd << 12;
+  if (code) res |= 1 << 20; // sets L if ldr;
   
   if (N == 3){
     res |= 1 << 24; // Set the pre flag
@@ -179,6 +190,9 @@ uint32_t assemble_sdt(map *symbols, char **tokens, int N, uint32_t instr_address
       if (expression <= 0xFF){
         // return MOV Rd expression
         //uint32_t assemble_data_proc(map *symbols, char **tokens, int N, uint32_t code)
+        tokens[0] = "mov";
+        strcpy(tokens[2],tempexpr);
+        strcpy(tokens[1],temprd);
         return assemble_data_proc(symbols, tokens, N, instr_address);
       } else {
         // expression is too large and needs to be added to end
@@ -191,7 +205,29 @@ uint32_t assemble_sdt(map *symbols, char **tokens, int N, uint32_t instr_address
         return res;
         // RETURN THE RESULT
       }
-    } 
+    } else { // ldr or str pre
+      tokens[2][strcspn(tokens[2],"]")] = '\0';
+      int Rn = get_register_address(tokens[2]);
+      res |= Rn << 16;
+
+    }
+  } else if (N == 4){ // pre or post
+      res |= 1 << 23;
+    if (tokens[3][strlen(tokens[3])-1] == ']'){ //pre index
+      res |= 1 << 24; 
+      tokens[3][strcspn(tokens[3],"]")] = '\0';
+      int expression = get_register_address(tokens[3]);
+      res |= (expression); // set offset to expresion
+      int Rn = get_register_address(tokens[2]);
+      res |= Rn << 16;
+    } else { //post index
+      int expression = get_register_address(tokens[3]);
+      tokens[2][strcspn(tokens[2],"]")] = '\0';
+      int Rn = get_register_address(tokens[2]);
+      res |= Rn << 16;
+      res |= (expression); // set offset to expresion
+    }
+
   }
 
   // char **stuff = NULL;
