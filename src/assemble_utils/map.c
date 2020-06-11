@@ -28,15 +28,16 @@ void addMap(map *root, const char *word, uint32_t code, assemble_function functi
     root->function = function;
     return; 
   }
-  map* new = createMap();
-  strcpy(new->word,word);
-  new->code = code;
   if (root->next){
-    new->next = root->next;
-    root->next = new;
-  } else {
-    root->next = new;
+    addMap(root->next, word, code, function);
+    return;
   }
+
+  map *new = createMap();
+  new->code = code;
+  strcpy(new->word,word);
+  new->function = function;
+  root->next = new;
   //if(root){
   //    new->next = root;
   //}
@@ -116,6 +117,17 @@ void set_function(map *root, char* word, assemble_function function){
   } else {
     set_function(root->next, word, function);
   }
+}
+
+map *get_map_from_word(map *root, const char *word){
+  // Will return the first map element with same word
+  // Returns NULL if this does not exist
+
+  map *curr = root;
+  while(curr && strcmp(curr->word, word)){
+    curr = curr->next;
+  }
+  return curr;
 }
 
 // Testing map using main - seems to work

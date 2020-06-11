@@ -29,8 +29,8 @@ map *createSymbolTable(char *filename){
         addMap(symbol_table,tokens[0],code,NULL); 
       } else {
         end +=4;
+        code +=4;
       }
-      code += 4;
       //freeTokens(tokens, &N);
     }
   fclose(input);
@@ -64,9 +64,11 @@ uint32_t *secondPass(char* filename, map *symbols, int *num_of_instructions){
     code+=4;
   }
   fclose(input);
-  if (getCode(symbols," ")>0){
-    contents[code/4] = getCode(symbols," ");
+  map *end = get_map_from_word(symbols," ");
+  while (end){
+    contents[code/4] = end->code;
     code+=4;
+    end = end->next;
   }
   *num_of_instructions = code/4;
   return contents;

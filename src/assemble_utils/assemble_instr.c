@@ -60,7 +60,11 @@ int get_register_address(char *registers) {
     if (registers[0] == '0' && registers[1] == 'x'){
       //hex
     res = strtol(registers,NULL,16);
-    } else{
+    } else if (registers[0] == '-' && registers[1] == '0' && registers[2] == 'x'){
+      memmove(registers,registers+1,strlen(registers));
+      res = -1 * strtol(registers,NULL,16);
+    }
+    else{
       //not hex
     res = strtol(registers,NULL,10);
     }
@@ -187,6 +191,7 @@ uint32_t assemble_sdt(map *symbols, char **tokens, int N, uint32_t instr_address
       // This means it is an expression.
       // ldr only
       int expression = get_register_address(tokens[2]); 
+      if (expression < 0) {res &= (mask(24) >> 1); expression*=-1;}
       if (expression <= 0xFF){
         // return MOV Rd expression
         //uint32_t assemble_data_proc(map *symbols, char **tokens, int N, uint32_t code)
@@ -199,9 +204,9 @@ uint32_t assemble_sdt(map *symbols, char **tokens, int N, uint32_t instr_address
         res |= 15 << 16; //PC 
         addMap(symbols, " ", expression, NULL);
         int end = getCode(symbols, "__end");
-        end++;
-        set_code(symbols,"__end", end + 1);
-        res |= (end - 9) - (instr_address); // OFFSET;
+        res |= (end) - (instr_address + 8); // OFFSET;
+        end += 4;
+        set_code(symbols,"__end", end);
         return res;
         // RETURN THE RESULT
       }
@@ -215,12 +220,18 @@ uint32_t assemble_sdt(map *symbols, char **tokens, int N, uint32_t instr_address
       res |= 1 << 23;
     if (tokens[3][strlen(tokens[3])-1] == ']'){ //pre index
       res |= 1 << 24; 
+      printf("Token IS %s\n",tokens[3]);
       tokens[3][strcspn(tokens[3],"]")] = '\0';
       int expression = get_register_address(tokens[3]);
+      if (expression < 0){
+        res &= ~(1 << 23);
+        expression *= -1;
+      }
       res |= (expression); // set offset to expresion
       int Rn = get_register_address(tokens[2]);
       res |= Rn << 16;
     } else { //post index
+      res |= 1 << 25; // I set to 1
       int expression = get_register_address(tokens[3]);
       tokens[2][strcspn(tokens[2],"]")] = '\0';
       int Rn = get_register_address(tokens[2]);
@@ -246,37 +257,21 @@ uint32_t assemble_branch(map *symbols, char **tokens, int N, uint32_t instr_addr
   uint32_t res = 0;
   uint32_t opcode = getCode(symbols,tokens[0]);
 
-/*
- if(!strcmp(tokens[0],"beq")){
-    opcode = 0;
- }else if(!strcmp(tokens[0],"bne")){
-    opcode = 1;
- }else if(!strcmp(tokens[0],"bge")){
-    opcode = 10;
- }else if(!strcmp(tokens[0],"blt")){
-    opcode = 11;
- }else if(!strcmp(tokens[0],"bgt")){
-    opcode = 12;
- }else if(!strcmp(tokens[0],"ble")){
-    opcode = 13;
- }else{
-    opcode = 14;
- }
- */
- 
- res = opcode<<28 | 10<<24;
+  res |= opcode << 28;
+  res |= 0xa << 24;
 
 //offset between current address and the label
 //the +8 is added because of the way the pipeline works counter is 8 bytes
 //ahead of the  executed instruction
 
-uint32_t offset = getCode(symbols,tokens[1]) - (instr_address + 8);
-  
+
+
+uint32_t offset = (getCode(symbols,tokens[1])) - (instr_address + 8);
+printf("OFFSET IS %x\n",offset);
 //shifted by 2 bits
-offset = offset>>2;
+offset = offset>>2 ;
   
-res = res | offset;
-  
+res = res | (offset & mask(24));
   //printf("%u\n",offset);
  
   return res;

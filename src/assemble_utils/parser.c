@@ -56,7 +56,7 @@ int isLabel(char* token){
 }
 
 void preReadCodes(map *symbol_table){
-  FILE *file = fopen("/home/sarveen/Documents/c_group_project/arm11_42/src/opcodes.txt", "r");
+  FILE *file = fopen("/home/sarveen/Documents/C_Group_Project/arm11_42/src/opcodes.txt", "r");
   if (!file) perror("preread failed");
   char word[30];
   int N;
