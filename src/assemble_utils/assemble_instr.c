@@ -16,44 +16,60 @@ uint32_t mask(int no_of_bits) {
   while ()
 }
 */
-static uint32_t immediateVal(int operand2) {
-  uint32_t result = operand2 & mask(8);
-  uint32_t rotateTimes = (operand2 >> 8) * 2;
-  result = (result >> rotateTimes) | ((result & mask(rotateTimes)) << (32 - rotateTimes));
-  return result;
-}
-
-static int count_zeroes(uint32_t word){
-  unsigned int num_of_zeroes = 32;
-  if (word) num_of_zeroes--; 
-  if (word & 0x0000FFFF) num_of_zeroes -= 16;
-  if (word & 0x00FF00FF) num_of_zeroes -= 8;
-  if (word & 0x0F0F0F0F) num_of_zeroes -= 4;
-  if (word & 0x33333333) num_of_zeroes -= 2;
-  if (word & 0x55555555) num_of_zeroes -= 1;
+/*
+static int count_zeroes(uint32_t number){
+  unsigned int num_of_zeroes = 0;
+  while (!(number & 1)) {
+    num_of_zeroes++;
+    number >>= 1;
+  }
   return num_of_zeroes;
 }
 
+
 static int calculate(uint32_t word){
-  if (word < 0xE) return word;
+  //uint32_t res = word;
+  if (word < mask(8)) return word;
   uint32_t rotateTimes = count_zeroes(word);
   return (word >> rotateTimes) | ((rotateTimes/2) << 8);
 }
+*/
 
+static uint32_t rotateLeft(uint32_t word, int times){
+  return (word << times) | (word >> (31-times));
+}
+
+static int calculate_rotate_value(uint32_t word){
+  for (int i = 0; i < 32; i += 2){
+    if (rotateLeft(word,i) <= mask(8)) return i;
+  }
+  perror("too large");
+  exit(EXIT_FAILURE);
+}
+
+static int calculate(uint32_t word){
+  int rotateTimes = calculate_rotate_value(word);
+  return ((rotateTimes / 2) << 8) | (word >> (32 - rotateTimes));
+}
 
 int get_register_address(char *registers) {
-  if (registers[0] == '#'){
+  if (registers[0] == '#' || registers[0] == '='){
+    // <#expression>
     memmove(registers, registers + 1, strlen(registers));
     int res;
     if (registers[0] == '0' && registers[1] == 'x'){
+      //hex
     res = strtol(registers,NULL,16);
     } else{
+      //not hex
     res = strtol(registers,NULL,10);
     }
-    res = calculate(res);
-    printf("RES IS %d %d\n",res, immediateVal(res));
+    //printf("ROTATE VALUE: %d\n",calculate_rotate_value(res));
+    //res = calculate(res);
+    //printf("RES IS %x %d\n",res, immediateVal(res));
     return res;
   } 
+  //register
   memmove(registers, registers + 1, strlen(registers));
   int res = strtol(registers,NULL,10);
   return res;
@@ -68,7 +84,9 @@ uint32_t assemble_data_proc(map *symbols, char **tokens, int N, uint32_t code) {
     //2. single operand assignment: mov - mov Rd. <Operand2>
     //3. do not compute results, but sets CPSR flag: tst, teq, cmp - <opcode> Rn, <Operand2>
     
-    
+    //Operand two = Imm value => I = 1, = register => I = 0  
+    //O
+
     uint32_t res;
     uint32_t cond = 14;
    //all data proc cond = 1110
@@ -78,17 +96,16 @@ uint32_t assemble_data_proc(map *symbols, char **tokens, int N, uint32_t code) {
     uint32_t rd = 0;
     uint32_t opcode = getCode(symbols, tokens[0]);
     uint32_t operand_two = 0;
+    int operand_two_index;
 
     if (N == 4) {
       //add, eor, sub, rsb, add, orr
       rd = get_register_address(tokens[1]);
       rn = get_register_address(tokens[2]);
-      if (tokens[3][0] == 'r') I = 0;
-      operand_two = get_register_address(tokens[3]);
+      operand_two_index = 3;
     } else {
       //N == 3
-      if (tokens[2][0]=='r') I = 0;
-      operand_two = get_register_address(tokens[2]);
+      operand_two_index = 2;
       if (opcode == 13) {
         //mov
       rd = get_register_address(tokens[1]);
@@ -98,6 +115,23 @@ uint32_t assemble_data_proc(map *symbols, char **tokens, int N, uint32_t code) {
         S = 1;
       }
     }
+
+    // setting operand two, I 
+    if (tokens[operand_two_index][0] == 'r') I = 0;
+
+
+    operand_two = get_register_address(tokens[operand_two_index]);
+    operand_two = calculate(operand_two);
+
+    /*
+    if (I) {
+     
+
+    } else {
+      //register
+    }
+    */  
+    
     res = (cond << 28 | I << 25 | opcode << 21 | S << 20 | 
           rn << 16 | rd << 12 | operand_two);
     return res;
@@ -121,22 +155,62 @@ uint32_t assemble_multiply(map *symbols, char **tokens, int N, uint32_t code) {
     }
     return res;
 }
-/*
-uint32_t assemble_sdt(const char **tokens, int N, const map *symbols) {
-  uint32_t res = 0xE40 << 19;
+
+
+uint32_t assemble_sdt(map *symbols, char **tokens, int N, uint32_t instr_address) {
+  uint32_t res = 0xE40 << 20;
   char *word = tokens[0];
   // NEED TO GET CODE FROM MAP
-  uint32_t code = 12312423;
+  
+  int code = getCode(symbols, word);
+  res |= code << 20; // Add the symbol to the result
+
+  int Rd = get_register_address(tokens[1]);
+  res |= Rd << 12;
+  
+  if (N == 3){
+    res |= 1 << 24; // Set the pre flag
+    // This means it is either pre or expre
+    res |= 1 << 23; // Set the up flag - in most cases, we'll add
+    if (tokens[2][0] == '='){
+      // This means it is an expression.
+      // ldr only
+      int expression = get_register_address(tokens[2]); 
+      if (expression <= 0xFF){
+        // return MOV Rd expression
+        //uint32_t assemble_data_proc(map *symbols, char **tokens, int N, uint32_t code)
+        return assemble_data_proc(symbols, tokens, N, instr_address);
+      } else {
+        // expression is too large and needs to be added to end
+        res |= 15 << 16; //PC 
+        addMap(symbols, " ", expression, NULL);
+        int end = getCode(symbols, "__end");
+        end++;
+        set_code(symbols,"__end", end + 1);
+        res |= (end - 9) - (instr_address); // OFFSET;
+        return res;
+        // RETURN THE RESULT
+      }
+    } 
+  }
+
+  // char **stuff = NULL;
+  // int Rn = 0;
+
+
+  // Means that the argument 
+  //uint32_t code = 12312423;
   res |= code << 20;
   return res;
 }
-*/
+
 
 uint32_t assemble_branch(map *symbols, char **tokens, int N, uint32_t instr_address) {
     
   uint32_t res = 0;
-  uint32_t opcode;
+  uint32_t opcode = getCode(symbols,tokens[0]);
 
+/*
  if(!strcmp(tokens[0],"beq")){
     opcode = 0;
  }else if(!strcmp(tokens[0],"bne")){
@@ -152,6 +226,7 @@ uint32_t assemble_branch(map *symbols, char **tokens, int N, uint32_t instr_addr
  }else{
     opcode = 14;
  }
+ */
  
  res = opcode<<28 | 10<<24;
 

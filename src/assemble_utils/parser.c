@@ -73,7 +73,7 @@ void preReadCodes(map *symbol_table){
         set_function(symbol_table,tokens[1],assemble_multiply);
         break;
       case 2:
-        set_function(symbol_table,tokens[1],assemble_branch);
+        set_function(symbol_table,tokens[1],assemble_sdt);
         break;
       case 3:
         set_function(symbol_table,tokens[1],assemble_branch);

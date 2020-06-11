@@ -18,6 +18,7 @@ map *createSymbolTable(char *filename){
   char* line = calloc(MAX_CHAR_LENGTH, sizeof(char));
   uint32_t code = 0;
   int N;
+  int end = 0;
   while (fgets(line,MAX_CHAR_LENGTH,input)){
     N = 0;
     if (!strcmp(line,"\n")) break;
@@ -26,11 +27,14 @@ map *createSymbolTable(char *filename){
       if(isLabel(tokens[0])){
         tokens[0][strlen(tokens[0])-1] = '\0';
         addMap(symbol_table,tokens[0],code,NULL); 
+      } else {
+        end +=4;
       }
       code += 4;
       //freeTokens(tokens, &N);
     }
   fclose(input);
+  addMap(symbol_table,"__end",end,NULL);
   return symbol_table;
 }
 
@@ -60,6 +64,10 @@ uint32_t *secondPass(char* filename, map *symbols, int *num_of_instructions){
     code+=4;
   }
   fclose(input);
+  if (getCode(symbols," ")>0){
+    contents[code/4] = getCode(symbols," ");
+    code+=4;
+  }
   *num_of_instructions = code/4;
   return contents;
 }

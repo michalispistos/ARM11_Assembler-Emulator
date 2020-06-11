@@ -24,5 +24,6 @@ void printMap(map* root);
 assemble_function get_function(map* root, char* word);
 void set_function(map *root, char* word, assemble_function function);
 uint32_t getCode(const map* root, char* word);
+void set_code(map* root, char* word, uint32_t code);
 
 #endif

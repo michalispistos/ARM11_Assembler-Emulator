@@ -77,7 +77,21 @@ void printMap(map* root){
   }
 }
 
+void set_code(map* root, char* word, uint32_t code) {
+  if(!root) {
+    perror("Set code failed");
+    exit(EXIT_FAILURE);
+  }
+  if (!strcmp(root->word,word)) {
+    root->code = code;
+    return;
+  } else {
+    set_code(root->next,word,code);
+  }
+}
+
 uint32_t getCode(const map* root, char* word){
+  if (!root) return 0;
   if(!strcmp(root->word,word)){
     return root->code;
   }
