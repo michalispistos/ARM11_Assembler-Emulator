@@ -20,6 +20,7 @@ map *createSymbolTable(char *filename){
   int N;
   while (fgets(line,MAX_CHAR_LENGTH,input)){
     N = 0;
+    if (!strcmp(line,"\n")) break;
     line[strcspn(line,"\n")] = '\0';
     char **tokens = tokenizer(line, &N);
       if(isLabel(tokens[0])){
@@ -46,6 +47,7 @@ uint32_t *secondPass(char* filename, map *symbols, int *num_of_instructions){
   uint32_t code = 0;
   while (fgets(line,MAX_CHAR_LENGTH,input)){
     N = 0;
+    if (!strcmp(line,"\n")) break;
     line[strcspn(line,"\n")] = '\0';
     char **tokens = tokenizer(line, &N);
     if (isLabel(tokens[0])){

@@ -55,10 +55,11 @@ int isLabel(char* token){
 }
 
 void preReadCodes(map *symbol_table){
-  FILE *in = fopen("assemble_utils/opcodes.txt", "r");
+  FILE *file = fopen("/home/sarveen/Documents/C_Group_Project/arm11_42/src/assemble_utils/opcodes.txt", "r");
+  if (!file) perror("preread failed");
   char word[30];
   int N;
-  while(fgets(word, 30, in)){
+  while(fgets(word, 30, file)){
     N = 0;
     word[strcspn(word,"\n")] = '\0';
     char **tokens = tokenizer(word,&N);
@@ -81,7 +82,8 @@ void preReadCodes(map *symbol_table){
         set_function(symbol_table,tokens[1],assemble_special);
         break;
     }
+    
   }
   
-  fclose(in);
+  fclose(file);
 }

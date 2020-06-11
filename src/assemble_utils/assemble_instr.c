@@ -7,9 +7,55 @@
 #include "map.h"
 #define MAX_CHAR_LENGTH (511)
 
+uint32_t mask(int no_of_bits) {
+  return (1 << no_of_bits) - 1;
+}
+
+/*static int getImmediateVal(int operand2){
+  int res = 0;
+  while ()
+}
+*/
+static uint32_t immediateVal(int operand2) {
+  uint32_t result = operand2 & mask(8);
+  uint32_t rotateTimes = (operand2 >> 8) * 2;
+  result = (result >> rotateTimes) | ((result & mask(rotateTimes)) << (32 - rotateTimes));
+  return result;
+}
+
+static int count_zeroes(uint32_t word){
+  unsigned int num_of_zeroes = 32;
+  if (word) num_of_zeroes--; 
+  if (word & 0x0000FFFF) num_of_zeroes -= 16;
+  if (word & 0x00FF00FF) num_of_zeroes -= 8;
+  if (word & 0x0F0F0F0F) num_of_zeroes -= 4;
+  if (word & 0x33333333) num_of_zeroes -= 2;
+  if (word & 0x55555555) num_of_zeroes -= 1;
+  return num_of_zeroes;
+}
+
+static int calculate(uint32_t word){
+  if (word < 0xE) return word;
+  uint32_t rotateTimes = count_zeroes(word);
+  return (word >> rotateTimes) | ((rotateTimes/2) << 8);
+}
+
+
 int get_register_address(char *registers) {
+  if (registers[0] == '#'){
+    memmove(registers, registers + 1, strlen(registers));
+    int res;
+    if (registers[0] == '0' && registers[1] == 'x'){
+    res = strtol(registers,NULL,16);
+    } else{
+    res = strtol(registers,NULL,10);
+    }
+    res = calculate(res);
+    printf("RES IS %d %d\n",res, immediateVal(res));
+    return res;
+  } 
   memmove(registers, registers + 1, strlen(registers));
-  int res = atoi(registers);
+  int res = strtol(registers,NULL,10);
   return res;
 }
 
@@ -37,9 +83,11 @@ uint32_t assemble_data_proc(map *symbols, char **tokens, int N, uint32_t code) {
       //add, eor, sub, rsb, add, orr
       rd = get_register_address(tokens[1]);
       rn = get_register_address(tokens[2]);
+      if (tokens[3][0] == 'r') I = 0;
       operand_two = get_register_address(tokens[3]);
     } else {
       //N == 3
+      if (tokens[2][0]=='r') I = 0;
       operand_two = get_register_address(tokens[2]);
       if (opcode == 13) {
         //mov
@@ -61,14 +109,14 @@ uint32_t assemble_multiply(map *symbols, char **tokens, int N, uint32_t code) {
     uint32_t res = cond << 28;
     int Rd = get_register_address(tokens[1]);
     int Rm = get_register_address(tokens[2]);
-    int Rn = get_register_address(tokens[3]);
+    int Rs = get_register_address(tokens[3]);
     res |= Rm;
     res |= (9) << 4;
-    res |= Rn << 12;
+    res |= Rs << 8;
     res |= Rd << 16;
     if (N == 5){//multiply and accumalate
-      int Rs = get_register_address(tokens[4]);
-      res |= Rs << 8;
+      int Rn = get_register_address(tokens[4]);
+      res |= Rn << 12;
       res |= (1 << 21);
     }
     return res;
@@ -110,13 +158,16 @@ uint32_t assemble_branch(map *symbols, char **tokens, int N, uint32_t instr_addr
 //offset between current address and the label
 //the +8 is added because of the way the pipeline works counter is 8 bytes
 //ahead of the  executed instruction
- uint32_t offset = getCode(symbols,tokens[1]) - (instr_address+8);
+
+uint32_t offset = getCode(symbols,tokens[1]) - (instr_address + 8);
   
 //shifted by 2 bits
 offset = offset>>2;
   
 res = res | offset;
   
+  //printf("%u\n",offset);
+ 
   return res;
 }
 
