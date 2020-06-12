@@ -81,6 +81,28 @@ int get_register_address(char *registers) {
   return res;
 }
 
+//by a constant
+uint32_t shifted_register_expression(uint32_t word, char* shiftType, int shiftAmount){
+  int type;
+  if (!strcmp("lsl",shiftType)) type = 0;
+  if (!strcmp("lsr",shiftType)) type = 1;
+  if (!strcmp("asr",shiftType)) type = 2;
+  if (!strcmp("ror",shiftType)) type = 3;
+  word |= (shiftAmount << 7 | type << 5);
+  return word;
+}
+// specified by register
+uint32_t shifted_register_register(uint32_t word, char* shiftType, int Rs){
+  int type;
+  if (!strcmp("lsl",shiftType)) type = 0;
+  if (!strcmp("lsr",shiftType)) type = 1;
+  if (!strcmp("asr",shiftType)) type = 2;
+  if (!strcmp("ror",shiftType)) type = 3;
+  word |= (1 << 4 | Rs << 8 | type << 5);
+  return word;
+}
+
+
 //IF DATA PROC IS WRONG:
 // did not specify what I is, did not specify what rd/rn is in each case, 
 uint32_t assemble_data_proc(map *symbols, char **tokens, int N, uint32_t code) {
@@ -104,12 +126,13 @@ uint32_t assemble_data_proc(map *symbols, char **tokens, int N, uint32_t code) {
     uint32_t operand_two = 0;
     int operand_two_index;
 
-    if (N == 4) {
-      //add, eor, sub, rsb, add, orr
+
+    if (N == 4 || N == 6) {
+      //and, eor, sub, rsb, add, orr
       rd = get_register_address(tokens[1]);
       rn = get_register_address(tokens[2]);
       operand_two_index = 3;
-    } else {
+    } else if (N == 3 || N == 5) {
       //N == 3
       operand_two_index = 2;
       if (opcode == 13) {
@@ -120,23 +143,25 @@ uint32_t assemble_data_proc(map *symbols, char **tokens, int N, uint32_t code) {
         rn = get_register_address(tokens[1]);
         S = 1;
       }
-    }
-
+    } 
+      
     // setting operand two, I 
     if (tokens[operand_two_index][0] == 'r') I = 0;
-
-
-    operand_two = get_register_address(tokens[operand_two_index]);
-    operand_two = calculate(operand_two);
-
-    /*
-    if (I) {
-     
-
+    if (I || N == 3 || N == 4){
+      operand_two = get_register_address(tokens[operand_two_index]);
+      operand_two = calculate(operand_two);
     } else {
-      //register
+      int Rm = get_register_address(tokens[operand_two_index]);
+      if (tokens[operand_two_index + 2][0] == '#'){
+        int shiftAmount = get_register_address(tokens[operand_two_index+2]);
+        operand_two = shifted_register_expression(Rm,tokens[operand_two_index+1],shiftAmount);
+      } else {
+        int R = get_register_address(tokens[operand_two_index+2]);
+        operand_two = shifted_register_register(Rm,tokens[operand_two_index+1],R);
+      }
     }
-    */  
+
+
     
     res = (cond << 28 | I << 25 | opcode << 21 | S << 20 | 
           rn << 16 | rd << 12 | operand_two);
@@ -178,15 +203,14 @@ uint32_t assemble_sdt(map *symbols, char **tokens, int N, uint32_t instr_address
   strcpy(temprd,tokens[1]);
   //temp
 
-
   int Rd = get_register_address(tokens[1]);
   res |= Rd << 12;
   if (code) res |= 1 << 20; // sets L if ldr;
-  
+  res |= 1 << 23;
   if (N == 3){
     res |= 1 << 24; // Set the pre flag
     // This means it is either pre or expre
-    res |= 1 << 23; // Set the up flag - in most cases, we'll add
+     // Set the up flag - in most cases, we'll add
     if (tokens[2][0] == '='){
       // This means it is an expression.
       // ldr only
@@ -219,9 +243,10 @@ uint32_t assemble_sdt(map *symbols, char **tokens, int N, uint32_t instr_address
   } else if (N == 4){ // pre or post
       res |= 1 << 23;
     if (tokens[3][strlen(tokens[3])-1] == ']'){ //pre index
-      res |= 1 << 24; 
-      printf("Token IS %s\n",tokens[3]);
-      tokens[3][strcspn(tokens[3],"]")] = '\0';
+    tokens[3][strcspn(tokens[3],"]")] = '\0';
+    res |= 1 << 24; // Pre index flag set
+      if (tokens[3][0] == '#'){ // pre-index with xpression
+      //tokens[3][strcspn(tokens[3],"]")] = '\0';
       int expression = get_register_address(tokens[3]);
       if (expression < 0){
         res &= ~(1 << 23);
@@ -230,13 +255,37 @@ uint32_t assemble_sdt(map *symbols, char **tokens, int N, uint32_t instr_address
       res |= (expression); // set offset to expresion
       int Rn = get_register_address(tokens[2]);
       res |= Rn << 16;
+      } else if (tokens[3][0] == 'r') {// optional pre index
+        int Rn = get_register_address(tokens[2]);
+        int Rm = get_register_address(tokens[3]);
+        res |= 1 << 25; // I set to 1
+        res |= Rn << 16;
+        res |= Rm;
+      }
+
     } else { //post index
-      res |= 1 << 25; // I set to 1
-      int expression = get_register_address(tokens[3]);
+      if (tokens[3][0] == 'r') res |= 1 << 25; // shifted register
       tokens[2][strcspn(tokens[2],"]")] = '\0';
       int Rn = get_register_address(tokens[2]);
       res |= Rn << 16;
+      int expression = get_register_address(tokens[3]);
       res |= (expression); // set offset to expresion
+    }
+
+  } else if (N == 6){ // post/pre indexing optional with a shift value
+    if (tokens[5][strlen(tokens[5])-1] == ']'){ //pre index
+    res |= 1 << 24; // Pre index flag set
+    int Rn = get_register_address(tokens[2]);
+    int Rm = get_register_address(tokens[3]);
+    res |= 1 << 25; // I set to 1
+    res |= Rn << 16;
+    tokens[5][strcspn(tokens[5],"]")] = '\0';
+    int shiftAmount = get_register_address(tokens[5]);
+    Rm = shifted_register_expression(Rm,tokens[4],shiftAmount);
+    res |= Rm;
+
+    } else { // post index - no test cases?
+    printf("POST");
     }
 
   }
@@ -277,16 +326,27 @@ res = res | (offset & mask(24));
   return res;
 }
 
-uint32_t assemble_special(map *symbols, char **tokens, int N, uint32_t code) {
+#define MAX_INSTRUCTION_LENGTH (5)
 
-  uint32_t res = 0;
+uint32_t assemble_special(map *symbols, char **tokens, int N, uint32_t code) {
 
   if(!strcmp(tokens[0],"andeq")){
     return 0;
   }
   if(!strcmp(tokens[0],"lsl")){
-    //int Rn = get_register_address(tokens[1]);
-   // return Rn;
+    char **new_instr = calloc(MAX_INSTRUCTION_LENGTH,(sizeof (char *)));
+    assert(new_instr);
+    for (int i = 0; i < 5; i++){
+      new_instr[i] = calloc(10,sizeof(char));
+      assert(new_instr[i]);
+    }
+    strcpy(new_instr[0],"mov");
+    strcpy(new_instr[1],tokens[1]);
+    strcpy(new_instr[2],tokens[1]);
+    strcpy(new_instr[3],tokens[0]);
+    strcpy(new_instr[4],tokens[2]);
+    return assemble_data_proc(symbols,new_instr,5,code);
   }
-  return res;
+  perror("NOT VALID SPECIAL INSTRUCTION");
+  exit(EXIT_FAILURE);
 }
