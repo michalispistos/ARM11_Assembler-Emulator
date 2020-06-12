@@ -1,5 +1,3 @@
-#define MAX_CHAR_LENGTH (511)
-#define MAX_INSTRUCTIONS (10)
 #include <inttypes.h>
 #include <string.h>
 #include <stdio.h>
@@ -8,6 +6,9 @@
 #include "map.h"
 #include "parser.h"
 
+#define MAX_WORD_LENGTH (511)
+#define MAX_INSTRUCTIONS (10)
+
 map *create_symbol_table(char *filename){
   FILE *input = fopen(filename,"r");
   if (!input) {
@@ -15,13 +16,13 @@ map *create_symbol_table(char *filename){
     exit(EXIT_FAILURE);
   }
   map *symbol_table = create_map();
-  char* line = calloc(MAX_CHAR_LENGTH, sizeof(char));
+  char line[MAX_WORD_LENGTH];
   uint32_t code = 0;
   int N;
   int end = 0;
-  while (fgets(line,MAX_CHAR_LENGTH,input)){
+  while (fgets(line,MAX_WORD_LENGTH,input)){
     N = 0;
-    if (!strcmp(line,"\n")) break;
+    if (!strcmp(line,"\n")) continue;
     line[strcspn(line,"\n")] = '\0';
     char **tokens = tokenizer(line, &N);
       if(is_label(tokens[0])){
@@ -33,7 +34,6 @@ map *create_symbol_table(char *filename){
       }
       free(tokens);
     }
-  free(line);
   fclose(input);
   add_map(symbol_table,"__end",end,NULL);
   return symbol_table;
@@ -47,12 +47,12 @@ uint32_t *second_pass(char* filename, map *symbols, int *num_of_instructions){
     perror("Error opening file");
     exit(EXIT_FAILURE);
   }
-  char* line = calloc(MAX_CHAR_LENGTH, sizeof(char));
+  char line[MAX_WORD_LENGTH];
   int N;
   uint32_t code = 0;
-  while (fgets(line,MAX_CHAR_LENGTH,input)){
+  while (fgets(line,MAX_WORD_LENGTH,input)){
     N = 0;
-    if (!strcmp(line,"\n")) break;
+    if (!strcmp(line,"\n")) continue;
     line[strcspn(line,"\n")] = '\0';
     char **tokens = tokenizer(line, &N);
     if (is_label(tokens[0])){
@@ -62,16 +62,15 @@ uint32_t *second_pass(char* filename, map *symbols, int *num_of_instructions){
     uint32_t result = (func)(symbols,tokens,N,code);
     contents[code/4] = result;
     free(tokens);
-    code+=4;
+    code += 4;
   }
   fclose(input);
   map *end = get_map_from_word(symbols," ");
   while (end){
     contents[code/4] = end->code;
-    code+=4;
+    code += 4;
     end = end->next;
   }
-  free(line);
   *num_of_instructions = code/4;
   return contents;
 }

@@ -7,7 +7,7 @@
 #include <unistd.h> 
 #include <assert.h>
 
-#define MAX_INSTRUCTION_LENGTH (6)
+#define MAX_INSTRUCTION_LENGTH (10)
 
 enum Commands {
 	       DATA_PROC,
@@ -20,8 +20,8 @@ enum Commands {
 void write_file(uint32_t *contents,int num_of_instructions ,char *filename){
   FILE *output = fopen(filename,"wb");
   fwrite(contents,4,num_of_instructions,output);
-  free(contents);
   fclose(output);
+  free(contents);
 }
 
 

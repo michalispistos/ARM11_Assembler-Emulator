@@ -3,10 +3,11 @@
 #include <string.h>
 #include <stdint.h>
 #include <assert.h>
-
 #include "map.h"
+#include "assemble_instr.h"
 
-#define MAX_CHAR_LENGTH (511)
+#define MAX_WORD_LENGTH (511)
+
 
 uint32_t mask(int no_of_bits) {
   return (1 << no_of_bits) - 1;
@@ -47,6 +48,7 @@ int get_value_from_token(char *registers) {
     }
     return res;
   } else if (registers[0] == '[') {
+    // if there is a square bracket this will remove
     memmove(registers,registers+1,strlen(registers));
   }
   //register
@@ -191,6 +193,8 @@ uint32_t assemble_sdt(map *symbols, char **tokens, int N, uint32_t instr_address
         add_map(symbols, " ", expression, NULL);
         int end = get_code(symbols, "__end");
         res |= (end) - (instr_address + 8); // OFFSET;
+        printf("OFFSET IS %d\n",(end) - (instr_address + 8));
+
         end += 4;
         set_code(symbols,"__end", end);
         return res;
@@ -269,8 +273,6 @@ uint32_t assemble_branch(map *symbols, char **tokens, int N, uint32_t instr_addr
 //the +8 is added because of the way the pipeline works counter is 8 bytes
 //ahead of the  executed instruction
 
-
-
 uint32_t offset = (get_code(symbols,tokens[1])) - (instr_address + 8);
 printf("OFFSET IS %x\n",offset);
 //shifted by 2 bits
@@ -301,7 +303,12 @@ uint32_t assemble_special(map *symbols, char **tokens, int N, uint32_t code) {
     strcpy(new_instr[2],tokens[1]);
     strcpy(new_instr[3],tokens[0]);
     strcpy(new_instr[4],tokens[2]);
-    return assemble_data_process(symbols,new_instr,5,code);
+    uint32_t result = assemble_data_process(symbols,new_instr,5,code);
+    for (int i = 0; i < 5; i++){
+      free(new_instr[i]);
+    }
+    free(new_instr);
+    return result;
   }
   perror("NOT VALID SPECIAL INSTRUCTION");
   exit(EXIT_FAILURE);

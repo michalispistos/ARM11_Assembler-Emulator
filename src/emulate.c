@@ -6,7 +6,7 @@
 #include "emulate_utils/initialise.h"
 #include "emulate_utils/pipeline.h"
 
-#define PC 15
+#define PC (15)
 
 void emulate(uint32_t * registers, uint32_t * memory) {
   uint32_t instrA = 1; //fetching
