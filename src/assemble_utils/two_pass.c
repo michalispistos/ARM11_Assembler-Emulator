@@ -8,13 +8,13 @@
 #include "map.h"
 #include "parser.h"
 
-map *createSymbolTable(char *filename){
+map *create_symbol_table(char *filename){
   FILE *input = fopen(filename,"r");
   if (!input) {
     perror("Error opening file");
     exit(EXIT_FAILURE);
   }
-  map *symbol_table = createMap();
+  map *symbol_table = create_map();
   char* line = calloc(MAX_CHAR_LENGTH, sizeof(char));
   uint32_t code = 0;
   int N;
@@ -24,22 +24,23 @@ map *createSymbolTable(char *filename){
     if (!strcmp(line,"\n")) break;
     line[strcspn(line,"\n")] = '\0';
     char **tokens = tokenizer(line, &N);
-      if(isLabel(tokens[0])){
+      if(is_label(tokens[0])){
         tokens[0][strlen(tokens[0])-1] = '\0';
-        addMap(symbol_table,tokens[0],code,NULL); 
+        add_map(symbol_table,tokens[0],code,NULL); 
       } else {
         end +=4;
         code +=4;
       }
-      //freeTokens(tokens, &N);
+      free(tokens);
     }
+  free(line);
   fclose(input);
-  addMap(symbol_table,"__end",end,NULL);
+  add_map(symbol_table,"__end",end,NULL);
   return symbol_table;
 }
 
 
-uint32_t *secondPass(char* filename, map *symbols, int *num_of_instructions){
+uint32_t *second_pass(char* filename, map *symbols, int *num_of_instructions){
   uint32_t* contents = calloc(MAX_INSTRUCTIONS,sizeof(uint32_t));
   FILE *input = fopen(filename,"r");
   if (!input) {
@@ -54,13 +55,13 @@ uint32_t *secondPass(char* filename, map *symbols, int *num_of_instructions){
     if (!strcmp(line,"\n")) break;
     line[strcspn(line,"\n")] = '\0';
     char **tokens = tokenizer(line, &N);
-    if (isLabel(tokens[0])){
+    if (is_label(tokens[0])){
         continue;
     }
     assemble_function func = get_function(symbols,tokens[0]);
     uint32_t result = (func)(symbols,tokens,N,code);
     contents[code/4] = result;
-    //freeTokens(tokens,&N);
+    free(tokens);
     code+=4;
   }
   fclose(input);
@@ -70,6 +71,7 @@ uint32_t *secondPass(char* filename, map *symbols, int *num_of_instructions){
     code+=4;
     end = end->next;
   }
+  free(line);
   *num_of_instructions = code/4;
   return contents;
 }

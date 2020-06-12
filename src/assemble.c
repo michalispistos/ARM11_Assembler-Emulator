@@ -14,10 +14,11 @@ int main(int argc, char **argv) {
     perror("incorrect number of arguments.");
     exit(EXIT_FAILURE);
   }
-  map* res = createSymbolTable(argv[1]);
-  preReadCodes(res);
+  map* res = create_symbol_table(argv[1]);
+  pre_read_codes(res);
   int num_of_instructions = 0;
-  uint32_t *contents = secondPass(argv[1],res, &num_of_instructions);
-  writeFile(contents,num_of_instructions,argv[2]);
+  uint32_t *contents = second_pass(argv[1],res, &num_of_instructions);
+  destroy_map(res);
+  write_file(contents,num_of_instructions,argv[2]);
   return EXIT_SUCCESS;
 }

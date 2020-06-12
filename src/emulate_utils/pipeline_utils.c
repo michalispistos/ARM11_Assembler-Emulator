@@ -51,7 +51,7 @@ uint32_t condition(uint32_t instr) {
 }
 
 // Checks if the condition of a instruction is met
-int checkCondition(uint32_t instr, uint32_t * registers) {
+int check_condition(uint32_t instr, uint32_t * registers) {
   uint32_t CPSR_val = registers[CPSR];
   int Zset = ((CPSR_val >> Z) & 1);
   int NeqV = (((CPSR_val >> N) & 1) == ((CPSR_val >> V) & 1));
@@ -77,7 +77,7 @@ int checkCondition(uint32_t instr, uint32_t * registers) {
 }
 
 // Returns the result if operand2 interpreted as immediate value
-static uint32_t immediateVal(int operand2) {
+static uint32_t immediate_val(int operand2) {
   uint32_t result = operand2 & mask(8);
   uint32_t rotateTimes = (operand2 >> 8) * 2;
   result = (result >> rotateTimes) | ((result & mask(rotateTimes)) << (32 - rotateTimes));
@@ -85,7 +85,7 @@ static uint32_t immediateVal(int operand2) {
 }
 
 // Returns the result if operand2 interpreted as a register
-static uint32_t registerOper(int operand2, int S, uint32_t * registers, uint32_t * newC) {
+static uint32_t register_operand(int operand2, int S, uint32_t * registers, uint32_t * newC) {
   uint32_t result = registers[operand2 & mask(4)];
   int carry;
 
@@ -148,7 +148,7 @@ static uint32_t registerOper(int operand2, int S, uint32_t * registers, uint32_t
   return result;
 }
 
-void executeDataProcess(uint32_t * registers, uint32_t instr) {
+void execute_data_process(uint32_t * registers, uint32_t instr) {
   int I = (instr >> 25) & 1;
   int opcode = (instr >> 21) & mask(4);
   int S = (instr >> 20) & 1;
@@ -160,10 +160,10 @@ void executeDataProcess(uint32_t * registers, uint32_t instr) {
   // SET OPERAND2 VALUE
   uint32_t operand2;
   if (I) {
-    operand2 = immediateVal(operand);
+    operand2 = immediate_val(operand);
   } else {
     //follow instructions for I not set
-    operand2 = registerOper(operand, S, registers, & newC);
+    operand2 = register_operand(operand, S, registers, & newC);
   }
 
   // INTERPRETATION OF OPCODE
@@ -227,7 +227,7 @@ void executeDataProcess(uint32_t * registers, uint32_t instr) {
 
 // PC not used as an operand or destination register
 // Rd will not be equal to Rm
-void executeMultiply(uint32_t * registers, uint32_t instr) {
+void execute_multiply(uint32_t * registers, uint32_t instr) {
   int A = (instr >> 21) % 2;
   int S = (instr >> 20) % 2;
   int Rd = (instr >> 16) & mask(4);
@@ -263,15 +263,15 @@ void executeMultiply(uint32_t * registers, uint32_t instr) {
   }
 }
 
-// toMem takes a 32 bit instruction and stores it in the correct into memory
-static void toMem(uint32_t instr, uint32_t * memory, uint32_t address) {
+// to_memory takes a 32 bit instruction and stores it in the correct into memory
+static void to_memory(uint32_t instr, uint32_t * memory, uint32_t address) {
   for (int i = 0; i < 4; i++) {
     memory[address + i] = mask(8) & (instr >> 8 * i);
   }
 }
 
-// toReg returns a 32 bit word from memory (SAME AS FETCH)
-static uint32_t toReg(uint32_t address, uint32_t * memory) {
+// to_register returns a 32 bit word from memory (SAME AS FETCH)
+static uint32_t to_register(uint32_t address, uint32_t * memory) {
   uint32_t res = 0;
   for (int i = 3; i >= 0; i--) {
     res += memory[address + i] << (8 * i);
@@ -279,7 +279,7 @@ static uint32_t toReg(uint32_t address, uint32_t * memory) {
   return res;
 }
 
-void executeSingleDataTransfer(uint32_t * registers, uint32_t * memory, uint32_t instr) {
+void execute_single_data_transfer(uint32_t * registers, uint32_t * memory, uint32_t instr) {
   int I = (instr >> 25) % 2;
   int P = (instr >> 24) % 2;
   int U = (instr >> 23) % 2;
@@ -288,7 +288,7 @@ void executeSingleDataTransfer(uint32_t * registers, uint32_t * memory, uint32_t
   int Rd = (instr >> 12) & mask(4);
   int offset = instr & mask(12);
 
-  uint32_t interp_offset = I ? registerOper(offset, 0, registers, (uint32_t * ) 1) : immediateVal(offset);
+  uint32_t interp_offset = I ? register_operand(offset, 0, registers, (uint32_t * ) 1) : immediate_val(offset);
   //if PC used as base register(Rn), then Rn must contain instruction's address + 8 bytes
   uint32_t result = registers[Rn];
   if (P) {
@@ -300,10 +300,10 @@ void executeSingleDataTransfer(uint32_t * registers, uint32_t * memory, uint32_t
     } else {
       if (L) {
         //word loaded from memory
-        registers[Rd] = toReg(result, memory);
+        registers[Rd] = to_register(result, memory);
       } else {
         //word stored into memory
-        toMem(registers[Rd], memory, result);
+        to_memory(registers[Rd], memory, result);
       }
     }
   } else {
@@ -312,10 +312,10 @@ void executeSingleDataTransfer(uint32_t * registers, uint32_t * memory, uint32_t
     } else {
       if (L) {
         //word loaded from memory
-        registers[Rd] = toReg(registers[Rn], memory);
+        registers[Rd] = to_register(registers[Rn], memory);
       } else {
         //word stored into memory
-        toMem(registers[Rd], memory, registers[Rn]);
+        to_memory(registers[Rd], memory, registers[Rn]);
       }
       //offset is added/subtracted to base register after transferring data
       //change contents of base register by offset
@@ -324,7 +324,7 @@ void executeSingleDataTransfer(uint32_t * registers, uint32_t * memory, uint32_t
   }
 }
 
-void executeBranch(uint32_t * registers, uint32_t instr) {
+void execute_branch(uint32_t * registers, uint32_t instr) {
   int32_t offset = instr & mask(24);
 
   /*

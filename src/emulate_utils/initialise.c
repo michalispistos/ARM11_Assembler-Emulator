@@ -8,22 +8,22 @@
 #define num_of_registers 17
 #define memory_capacity 65536
 
-uint32_t * startRegisters(void) {
-  uint32_t * registers;
+uint32_t *start_registers(void) {
+  uint32_t *registers;
   registers = calloc(num_of_registers, 4);
   assert(registers != NULL);
   return registers;
 }
 
-void freeRegisters(uint32_t * registers) {
+void free_registers(uint32_t * registers) {
   free(registers);
 }
 
-void freeMemory(uint32_t * memory) {
+void free_memory(uint32_t * memory) {
   free(memory);
 }
 
-void printRegisters(uint32_t * registers) {
+void print_registers(uint32_t * registers) {
   printf("Registers:\n");
   for (int i = 0; i < 10; i++) {
     printf("$%d  :", i);
@@ -37,7 +37,7 @@ void printRegisters(uint32_t * registers) {
   printf("CPSR: %10d (0x%08x)\n", registers[16], registers[16]);
 }
 
-void loadFile(uint32_t * memory, char * filename) {
+void load_file(uint32_t * memory, char * filename) {
   FILE * file = fopen(filename, "rb");
   assert(file != NULL);
   char * word = malloc(1);
@@ -49,14 +49,14 @@ void loadFile(uint32_t * memory, char * filename) {
   fclose(file);
 }
 
-uint32_t * initializeMemory() {
+uint32_t * initialize_memory() {
   uint32_t * memory;
   memory = calloc(memory_capacity, 1);
   assert(memory != NULL);
   return memory;
 }
 
-void printMemoryHex(uint32_t * memory) {
+void print_memory_hex(uint32_t * memory) {
   printf("Non-zero memory:\n");
   for (int i = 0; i < 2048; i++) {
     uint32_t base = 4 * i;

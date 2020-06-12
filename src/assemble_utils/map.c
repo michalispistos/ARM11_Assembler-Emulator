@@ -6,8 +6,8 @@
 
 
 // Creates a new element
-map *createMap(){
-  map *res = (map *) malloc(sizeof(map));
+map *create_map(){
+  map *res = (map *) calloc(1, sizeof(map));
   if (!res){
     perror("createMap, NULL pointer allocated");
     exit(EXIT_FAILURE);
@@ -21,7 +21,7 @@ map *createMap(){
 }
 
 // Adds item to the front of the data structure
-void addMap(map *root, const char *word, uint32_t code, assemble_function function){
+void add_map(map *root, const char *word, uint32_t code, assemble_function function){
   if(!(root->word[0])){
     strcpy(root->word,word);
     root->code = code;
@@ -29,11 +29,11 @@ void addMap(map *root, const char *word, uint32_t code, assemble_function functi
     return; 
   }
   if (root->next){
-    addMap(root->next, word, code, function);
+    add_map(root->next, word, code, function);
     return;
   }
 
-  map *new = createMap();
+  map *new = create_map();
   new->code = code;
   strcpy(new->word,word);
   new->function = function;
@@ -45,36 +45,35 @@ void addMap(map *root, const char *word, uint32_t code, assemble_function functi
 }
 
 // Applies a function to each element in a map
-void functionMap(map *root, void (*func)(const char *, const uint32_t)){
+void function_map(map *root, void (*func)(const char *, const uint32_t)){
   if (root){
     func(root->word, root->code);
-    functionMap(root->next, func);
+    function_map(root->next, func);
   }
 }
 
 // Destroys a map
-void destroyMap(map *elem){
+void destroy_map(map *elem){
   if (elem){
-    destroyMap(elem->next);
+    destroy_map(elem->next);
     free(elem);
   }
 }
 
 // Prints the word an element contains
-void printWord(const char *word, const uint32_t code){
+void print_word(const char *word, const uint32_t code){
   printf("[%s] ", word);
 }
 
 // Prints the code an element contains
-void printCode(const char* word,const uint32_t code){
+void print_code(const char* word,const uint32_t code){
   printf("%d", code);
-  //[0x%08x]
 }
 
-void printMap(map* root){
+void print_map(map* root){
   if(root){
     printf("%s-%u\n",root->word,root->code);
-    printMap(root->next);
+    print_map(root->next);
   }
 }
 
@@ -91,13 +90,13 @@ void set_code(map* root, char* word, uint32_t code) {
   }
 }
 
-uint32_t getCode(const map* root, char* word){
+uint32_t get_code(const map* root, char* word){
   if (!root) return 0;
   if(!strcmp(root->word,word)){
     return root->code;
   }
 
-  return getCode(root->next,word);
+  return get_code(root->next,word);
 }
 
 assemble_function get_function(map* root, char* word){
@@ -134,9 +133,9 @@ map *get_map_from_word(map *root, const char *word){
 /*
   int main(void){
   map *root = createMap();
-  addMap(root,"A",1,NULL);
-  addMap(root, "B", 16,NULL);
-  addMap(root, "C", 256,NULL);
+  add_map(root,"A",1,NULL);
+  add_map(root, "B", 16,NULL);
+  add_map(root, "C", 256,NULL);
   char *token = calloc(1,sizeof(char));
   strcpy(token,"A");
   char *word = calloc(1,sizeof(char));
@@ -146,7 +145,7 @@ map *get_map_from_word(map *root, const char *word){
   uint32_t res = (func)(token,1);
   printf("%u\n",res);
   printMap(root);
-  destroyMap(root);
+  destroy_map(root);
   return EXIT_SUCCESS;
     
   }

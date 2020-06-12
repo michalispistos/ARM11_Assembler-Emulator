@@ -18,13 +18,14 @@ struct Map {
 
 
 
-map *createMap();
-void addMap(map *root, const char *word, uint32_t code, assemble_function function);
-void printMap(map* root);
+map *create_map();
+void add_map(map *root, const char *word, uint32_t code, assemble_function function);
+void print_map(map* root);
 assemble_function get_function(map* root, char* word);
 void set_function(map *root, char* word, assemble_function function);
-uint32_t getCode(const map* root, char* word);
+uint32_t get_code(const map* root, char* word);
 void set_code(map* root, char* word, uint32_t code);
 map *get_map_from_word(map *root, const char *word);
+void destroy_map(map *elem);
 
 #endif

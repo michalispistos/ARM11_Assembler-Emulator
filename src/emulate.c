@@ -8,7 +8,7 @@
 
 #define PC 15
 
-void simulate(uint32_t * registers, uint32_t * memory) {
+void emulate(uint32_t * registers, uint32_t * memory) {
   uint32_t instrA = 1; //fetching
   uint32_t instrB = 1; //decoding
   uint32_t decoded = 5;
@@ -38,17 +38,17 @@ int main(int argc, char ** argv) {
     return EXIT_FAILURE;
   }
 
-  uint32_t * memory = initializeMemory();
-  uint32_t * registers = startRegisters();
+  uint32_t * memory = initialize_memory();
+  uint32_t * registers = start_registers();
 
-  loadFile(memory, argv[1]);
+  load_file(memory, argv[1]);
 
-  simulate(registers, memory);
+  emulate(registers, memory);
 
-  printRegisters(registers);
-  printMemoryHex(memory);
+  print_registers(registers);
+  print_memory_hex(memory);
 
-  freeRegisters(registers);
-  freeMemory(memory);
+  free_registers(registers);
+  free_memory(memory);
   return EXIT_SUCCESS;
 }

@@ -39,21 +39,21 @@ uint32_t decode(uint32_t instr) {
 }
 
 int execute(uint32_t decoded, uint32_t instr, uint32_t * registers, uint32_t * memory) {
-  if (checkCondition(instr, registers)) {
+  if (check_condition(instr, registers)) {
     switch (decoded) {
     case HALT:
       break;
     case DATA_PROC:
-      executeDataProcess(registers, instr);
+      execute_data_process(registers, instr);
       break;
     case MULTIPLY:
-      executeMultiply(registers, instr);
+      execute_multiply(registers, instr);
       break;
     case SDTRANS:
-      executeSingleDataTransfer(registers, memory, instr);
+      execute_single_data_transfer(registers, memory, instr);
       break;
     case BRANCH:
-      executeBranch(registers, instr);
+      execute_branch(registers, instr);
       break;
     default:
       printf("should not be here, value of decoded: %u\n", decoded);

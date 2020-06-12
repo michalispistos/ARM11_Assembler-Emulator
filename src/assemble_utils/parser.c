@@ -4,9 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "assemble_instr.h"
-#include <unistd.h>
+#include <unistd.h> 
+#include <assert.h>
 
-#define MAX_INSTRUCTION_LENGTH (5)
+#define MAX_INSTRUCTION_LENGTH (6)
 
 enum Commands {
 	       DATA_PROC,
@@ -16,34 +17,28 @@ enum Commands {
 	       SPECIAL
 };
 
-void writeFile(uint32_t *contents,int num_of_instructions ,char *filename){
+void write_file(uint32_t *contents,int num_of_instructions ,char *filename){
   FILE *output = fopen(filename,"wb");
   fwrite(contents,4,num_of_instructions,output);
+  free(contents);
   fclose(output);
 }
 
-void freeTokens(char **tokens, int *N){
-  for (int i = 0; i < *N; i++){
-    free(tokens[i]);
-  }
-  free(tokens);
-}
 
 char **tokenizer(char *line, int *N){
   // splits a given line into label, opcode, operand field;
   char **tokens = calloc(MAX_INSTRUCTION_LENGTH,(sizeof (char *)));
-  char *token;
+  assert(tokens);
   char *rest = line;
+  char* token;
   while ((token = strtok_r(rest," ",&rest))){
     if (*N > 0){
-      char *nextToken;
+      char* nextToken;
       while((nextToken = strtok_r(token,",",&token))){
-      tokens[*N] = calloc(strlen(nextToken) + 1,sizeof(char));
 	    tokens[*N] = nextToken;
 	    *N = *N + 1;
       }
     } else {
-      tokens[*N] = calloc(strlen(token) + 1,sizeof(char));
       tokens[*N] = token;
       *N = *N + 1;
     }
@@ -51,11 +46,11 @@ char **tokenizer(char *line, int *N){
   return tokens;
 }
 
-int isLabel(char* token){
+int is_label(char* token){
   return token[strlen(token)-1] == ':';
 }
 
-void preReadCodes(map *symbol_table){
+void pre_read_codes(map *symbol_table){
   FILE *file = fopen("/home/sarveen/Documents/C_Group_Project/arm11_42/src/opcodes.txt", "r");
   if (!file) perror("preread failed");
   char word[30];
@@ -65,10 +60,10 @@ void preReadCodes(map *symbol_table){
     word[strcspn(word,"\n")] = '\0';
     char **tokens = tokenizer(word,&N);
     //assemble_function function;
-    addMap(symbol_table, tokens[1],atoi(tokens[2]),NULL);
+    add_map(symbol_table, tokens[1],atoi(tokens[2]),NULL);
     switch(atoi(tokens[0])){
       case 0:
-        set_function(symbol_table,tokens[1],assemble_data_proc);
+        set_function(symbol_table,tokens[1],assemble_data_process);
         break;
       case 1:
         set_function(symbol_table,tokens[1],assemble_multiply);
@@ -83,8 +78,7 @@ void preReadCodes(map *symbol_table){
         set_function(symbol_table,tokens[1],assemble_special);
         break;
     }
-    
+    free(tokens);
   }
-  
   fclose(file);
 }
