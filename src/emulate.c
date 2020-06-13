@@ -22,7 +22,10 @@ void emulate(uint32_t * registers, uint32_t * memory) {
         break;
       }
       if (execute(decoded, instrB, registers, memory) == 1 && decoded == 4) {
-        counter = 0;    
+        instrB = fetch(registers,memory);
+        registers[PC] += 4;
+        instrA = fetch(registers,memory);
+        registers[PC] += 4;
         continue;
       }
     }
@@ -30,8 +33,9 @@ void emulate(uint32_t * registers, uint32_t * memory) {
     instrA = fetch(registers, memory);
     registers[PC] += 4;
     counter++;
-  } while (1);
+  } while (decoded != 0);
 }
+
 
 int main(int argc, char ** argv) {
   if (argc != 2) {

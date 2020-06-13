@@ -167,7 +167,7 @@ void execute_data_process(uint32_t * registers, uint32_t instr) {
   }
 
   // INTERPRETATION OF OPCODE
-  uint32_t result;
+  uint32_t result = 0;
   switch (opcode) {
   case AND:
     result = registers[Rn] & operand2;

@@ -88,7 +88,7 @@ uint32_t assemble_data_process(map *symbols, char **tokens, int N, uint32_t code
     uint32_t rd = 0;
     uint32_t opcode = get_code(symbols, tokens[0]);
     uint32_t operand_two = 0;
-    int operand_two_index;
+    int operand_two_index = 0;
 
 
     if (N == 4 || N == 6) {

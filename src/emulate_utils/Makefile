@@ -1,5 +1,5 @@
 CC      = gcc
-CFLAGS  = -Wall -g -std=c99 -Werror -pedantic -D_DEFAULT_SOURCE
+CFLAGS  = -Wall -g -std=c99 -Werror -pedantic -D_DEFAULT_SOURCE -O3
 LIB     = libemulate_utils.a
 LIBOBJS = pipeline.o pipeline_utils.o initialise.o
 BUILD   = $(LIB)

@@ -1,5 +1,5 @@
 CC      = gcc
-CFLAGS  = -Wall -g -std=c99 -Werror -pedantic -D_DEFAULT_SOURCE
+CFLAGS  = -Wall -g -std=c99 -Werror -pedantic -D_DEFAULT_SOURCE -O3
 LIB     = libassemble_utils.a
 LIBOBJS = assemble_instr.o map.o parser.o two_pass.o
 BUILD   = $(LIB)

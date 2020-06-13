@@ -1,5 +1,5 @@
 CC     = gcc
-CFLAGS = -Wall -g -std=c99 -pedantic -Werror -D_DEFAULT_SOURCE -Iemulate_utils -Iassemble_utils
+CFLAGS = -Wall -g -std=c99 -pedantic -Werror -D_DEFAULT_SOURCE -Iemulate_utils -Iassemble_utils -O3
 LDLIBS = -Lemulate_utils -Lassemble_utils -lemulate_utils -lassemble_utils
 BUILD  = libs emulate assemble 
 
