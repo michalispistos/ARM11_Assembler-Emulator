@@ -286,21 +286,33 @@ void execute_single_data_transfer(uint32_t * registers, uint32_t * memory, uint3
   int L = (instr >> 20) % 2;
   int Rn = (instr >> 16) & mask(4);
   int Rd = (instr >> 12) & mask(4);
-  int offset = instr & mask(12);
-
+  uint32_t offset = instr & mask(12);
   uint32_t interp_offset = I ? register_operand(offset, 0, registers, (uint32_t * ) 1) : immediate_val(offset);
-  //if PC used as base register(Rn), then Rn must contain instruction's address + 8 bytes
+  //if PC used as base register(Rn), then Rn must contain instruction's address plus 8 bytes
   uint32_t result = registers[Rn];
   if (P) {
     //offset is added/subtracted to base register before transferring data
     //will not change value of base register
     result += U ? interp_offset : -interp_offset;
-    if (result >= (1 << 16)) {
+    if (result == 0x20200000){
+      printf("One GPIO pin from 0 to 9 has been accessed\n");
+      registers[Rd] = result;
+    } else if (result == 0x20200004){
+      printf("One GPIO pin from 10 to 19 has been accessed\n");
+      registers[Rd] = result;
+    } else if (result == 0x20200008){
+      printf("One GPIO pin from 20 to 29 has been accessed\n");
+      registers[Rd] = result;
+    } else if (result == 0x20200028){
+      printf("PIN OFF\n");
+    } else if (result == 0x2020001c){
+      printf("PIN ON\n");
+    } else if (result >= (1 << 16)) {
       printf("Error: Out of bounds memory access at address 0x%08x\n", result);
     } else {
       if (L) {
         //word loaded from memory
-        registers[Rd] = to_register(result, memory);
+        registers[Rd] = to_register(result,memory);
       } else {
         //word stored into memory
         to_memory(registers[Rd], memory, result);

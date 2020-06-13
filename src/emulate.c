@@ -8,6 +8,7 @@
 
 #define PC (15)
 
+
 void emulate(uint32_t * registers, uint32_t * memory) {
   uint32_t instrA = 1; //fetching
   uint32_t instrB = 1; //decoding
@@ -21,7 +22,7 @@ void emulate(uint32_t * registers, uint32_t * memory) {
         break;
       }
       if (execute(decoded, instrB, registers, memory) == 1 && decoded == 4) {
-        counter = 0;
+        counter = 0;    
         continue;
       }
     }
