@@ -65,7 +65,7 @@ uint32_t *second_pass(char* filename, map *symbols, int *num_of_instructions){
     code += 4;
   }
   fclose(input);
-  map *end = get_map_from_word(symbols," ");
+  map_node *end = get_map_node_from_word(symbols," ");
   while (end){
     contents[code/4] = end->code;
     code += 4;

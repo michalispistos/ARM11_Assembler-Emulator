@@ -2,84 +2,129 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "map.h"
 
 
-map *create_map(){
-  map *res = (map *) calloc(1, sizeof(map));
-  if (!res){
-    perror("createMap, NULL pointer allocated");
+map_node *create_map_node(){
+  map_node *new_map_node = (map_node *) calloc(1, sizeof(map_node));
+  if (!new_map_node){
+    perror("create_map_node, NULL pointer allocated");
     exit(EXIT_FAILURE);
   }
-  strcpy(res->word,"HEAD");
-  res->code = 0;
-  return res;
+  return new_map_node;
+}
+
+map *create_map(){
+  map *new_map = (map *) calloc(1, sizeof(map));
+  if (!new_map){
+    perror("create_map, NULL pointer allocated");
+    exit(EXIT_FAILURE);
+  }
+  new_map->header = create_map_node();
+  return new_map;
+}
+
+void add_map_node(map_node *node, const char *word, uint32_t code, assemble_function function){
+  if (node->next){
+    add_map_node(node->next,word,code,function);
+    return;
+  }
+  map_node *new_map_node = create_map_node();
+  strcpy(new_map_node->word,word);
+  new_map_node->code = code;
+  new_map_node->function = function;
+  node->next = new_map_node;
 }
 
 void add_map(map *root, const char *word, uint32_t code, assemble_function function){
-  if (!strcmp(root->word, "HEAD")){
-    strcpy(root->word, word);
-    root->code = code;
-    root->function = function;
-  }
+  assert(root);
+  add_map_node(root->header,word,code,function);
+}
 
-  if (root->next){
-    add_map(root->next, word, code, function);
+void destroy_map_node(map_node *node){
+  if (node->next) {
+    destroy_map_node(node->next);
     return;
   }
-
-  map *new = create_map();
-  new->code = code;
-  strcpy(new->word,word);
-  new->function = function;
-  root->next = new;
+  free(node);
 }
 
 void destroy_map(map *elem){
-  if (elem) {
-    destroy_map(elem->next);
-    free(elem);
+  assert(elem);
+  destroy_map_node(elem->header);
+  free(elem);
+}
+
+void set_code_node(map_node *node, char* word, uint32_t code){
+  if (!node){
+    perror("Function set_code failed. Could not find node with word.");
+    exit(EXIT_FAILURE);
+  }
+  if (!strcmp(node->word,word)) {
+    node->code = code;
+  } else {
+    set_code_node(node->next,word,code);
   }
 }
 
 void set_code(map* root, char* word, uint32_t code) {
-  if(!root) {
-    perror("Set code failed");
+  assert(root);
+  set_code_node(root->header,word,code);
+}
+
+uint32_t get_code_node(map_node *node, char* word){
+  if (!node){
+    perror("Function get_code failed. Could not find node with word.");
     exit(EXIT_FAILURE);
   }
-  if (!strcmp(root->word,word)) {
-    root->code = code;
-    return;
+  if(!strcmp(node->word,word)){
+    return node->code;
+  }
+  return get_code_node(node->next,word);
+}
+
+uint32_t get_code(const map *root, char *word){
+  assert(root);
+  return get_code_node(root->header,word);
+}
+
+assemble_function get_function_node(map_node* node, char *word){
+  if (!node){
+    perror("Function get_function failed. Could not find node with word.");
+    exit(EXIT_FAILURE);
+  }
+  if (!strcmp(node->word,word)){
+    return node->function;
+  }
+  return get_function_node(node->next,word);
+}
+
+assemble_function get_function(map *root, char *word){
+  assert(root);
+  return get_function_node(root->header,word);
+}
+
+void set_function_node(map_node *node, char* word, assemble_function function){
+  if (!node){
+    perror("Function set_function failed. Could not find node with word.");
+    exit(EXIT_FAILURE);
+  }
+  if(!strcmp(node->word,word)){
+    node->function = function;
   } else {
-    set_code(root->next,word,code);
+    set_function_node(node->next, word, function);
   }
-}
-
-uint32_t get_code(const map* root, char* word){
-  if (!root) return 0;
-  if(!strcmp(root->word,word)){
-    return root->code;
-  }
-  return get_code(root->next,word);
-}
-
-assemble_function get_function(map* root, char* word){
-  if (!strcmp(root->word,word)){
-    return root->function;
-  }
-  return get_function(root->next,word);
 }
 
 void set_function(map *root, char* word, assemble_function function){
-  if(!strcmp(root->word,word)){
-    root->function = function;
-  } else {
-    set_function(root->next, word, function);
-  }
+  assert(root);
+  set_function_node(root->header,word,function);
 }
 
-map *get_map_from_word(map *root, const char *word){
-  map *curr = root;
+// returns NULL if cannot find map_node
+map_node *get_map_node_from_word(map *root, const char *word){
+  map_node *curr = root->header->next;
   while(curr && strcmp(curr->word, word)){
     curr = curr->next;
   }
