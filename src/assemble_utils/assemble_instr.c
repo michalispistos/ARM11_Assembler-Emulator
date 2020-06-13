@@ -251,7 +251,6 @@ uint32_t assemble_sdt(map *symbols, char **tokens, int N, uint32_t instr_address
     res |= Rm;
 
     } else { // post index - no test cases?
-    printf("POST");
     }
 
   }
@@ -274,7 +273,6 @@ uint32_t assemble_branch(map *symbols, char **tokens, int N, uint32_t instr_addr
 //ahead of the  executed instruction
 
 uint32_t offset = (get_code(symbols,tokens[1])) - (instr_address + 8);
-printf("OFFSET IS %x\n",offset);
 //shifted by 2 bits
 offset = offset>>2 ;
   
