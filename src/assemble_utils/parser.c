@@ -1,13 +1,12 @@
 #include <inttypes.h>
 #include <string.h>
-#include "map.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "assemble_instr.h"
 #include <unistd.h> 
 #include <assert.h>
-
-#define MAX_INSTRUCTION_LENGTH (10)
+#include "assemble_instr.h"
+#include "map.h"
+#include "parser.h"
 
 enum Commands {
 	       DATA_PROC,
@@ -27,7 +26,7 @@ void write_file(uint32_t *contents,int num_of_instructions ,char *filename){
 
 char **tokenizer(char *line, int *N){
   // splits a given line into label, opcode, operand field;
-  char **tokens = calloc(MAX_INSTRUCTION_LENGTH,(sizeof (char *)));
+  char **tokens = calloc(MAX_INSTRUCTIONS,(sizeof (char *)));
   assert(tokens);
   char *rest = line;
   char* token;
@@ -51,34 +50,33 @@ int is_label(char* token){
 }
 
 void pre_read_codes(map *symbol_table){
-  FILE *file = fopen("/home/sarveen/Documents/c_group_project/arm11_42/src/opcodes.txt", "r");
-  if (!file) perror("preread failed");
-  char word[30];
-  int N;
-  while(fgets(word, 30, file)){
-    N = 0;
-    word[strcspn(word,"\n")] = '\0';
-    char **tokens = tokenizer(word,&N);
-    //assemble_function function;
-    add_map(symbol_table, tokens[1],atoi(tokens[2]),NULL);
-    switch(atoi(tokens[0])){
-      case 0:
-        set_function(symbol_table,tokens[1],assemble_data_process);
-        break;
-      case 1:
-        set_function(symbol_table,tokens[1],assemble_multiply);
-        break;
-      case 2:
-        set_function(symbol_table,tokens[1],assemble_sdt);
-        break;
-      case 3:
-        set_function(symbol_table,tokens[1],assemble_branch);
-        break;
-      case 4:
-        set_function(symbol_table,tokens[1],assemble_special);
-        break;
-    }
-    free(tokens);
-  }
-  fclose(file);
+
+  add_map(symbol_table, "and", 0, assemble_data_process);
+  add_map(symbol_table, "eor", 1, assemble_data_process);
+  add_map(symbol_table, "sub", 2, assemble_data_process);
+  add_map(symbol_table, "rsb", 3, assemble_data_process);
+  add_map(symbol_table, "add", 4, assemble_data_process);
+  add_map(symbol_table, "orr", 12, assemble_data_process);
+  add_map(symbol_table, "mov", 13, assemble_data_process);
+  add_map(symbol_table, "tst", 8, assemble_data_process);
+  add_map(symbol_table, "teq", 9, assemble_data_process);
+  add_map(symbol_table, "cmp", 10, assemble_data_process);
+
+  add_map(symbol_table, "mul", 0, assemble_multiply);
+  add_map(symbol_table, "mla", 1, assemble_multiply);
+
+  add_map(symbol_table, "ldr", 1, assemble_sdt);
+  add_map(symbol_table, "str", 0, assemble_sdt);
+
+  add_map(symbol_table, "beq", 0, assemble_branch);
+  add_map(symbol_table, "bne", 1, assemble_branch);
+  add_map(symbol_table, "bge", 10, assemble_branch);
+  add_map(symbol_table, "blt", 11, assemble_branch);
+  add_map(symbol_table, "bgt", 12, assemble_branch);
+  add_map(symbol_table, "ble", 13, assemble_branch);
+  add_map(symbol_table, "b", 14, assemble_branch);
+  add_map(symbol_table, "al", 14, assemble_branch);
+  
+  add_map(symbol_table, "andeq", 0, assemble_special);
+  add_map(symbol_table, "lsl", 0, assemble_special);
 }

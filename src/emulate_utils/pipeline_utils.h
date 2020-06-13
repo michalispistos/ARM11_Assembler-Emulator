@@ -1,6 +1,9 @@
 #ifndef PIPELINE_UTILS_H
 #define PIPELINE_UTILS_H
 
+#define PC (15)
+#define CPSR (16)
+
 uint32_t mask(int no_of_bits);
 uint32_t condition(uint32_t instr);
 int check_condition(uint32_t instr, uint32_t *registers);

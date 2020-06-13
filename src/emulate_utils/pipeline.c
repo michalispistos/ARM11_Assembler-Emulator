@@ -4,8 +4,6 @@
 #include "pipeline.h"
 #include "pipeline_utils.h"
 
-#define PC 15
-
 // Enum of possible commands in the ARM project
 enum Commands {
   HALT,

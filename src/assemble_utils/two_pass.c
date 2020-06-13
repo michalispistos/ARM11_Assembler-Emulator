@@ -5,9 +5,7 @@
 #include "assemble_instr.h"
 #include "map.h"
 #include "parser.h"
-
-#define MAX_WORD_LENGTH (511)
-#define MAX_INSTRUCTIONS (10)
+#include "two_pass.h"
 
 map *create_symbol_table(char *filename){
   FILE *input = fopen(filename,"r");
@@ -35,12 +33,12 @@ map *create_symbol_table(char *filename){
       free(tokens);
     }
   fclose(input);
-  add_map(symbol_table,"__end",end,NULL);
+  symbol_table->end = end;
   return symbol_table;
 }
 
 
-uint32_t *second_pass(char* filename, map *symbols, int *num_of_instructions){
+uint32_t *second_pass(char* filename,map *symbols, int *num_of_instructions){
   uint32_t* contents = calloc(MAX_INSTRUCTIONS,sizeof(uint32_t));
   FILE *input = fopen(filename,"r");
   if (!input) {
@@ -65,7 +63,7 @@ uint32_t *second_pass(char* filename, map *symbols, int *num_of_instructions){
     code += 4;
   }
   fclose(input);
-  map_node *end = get_map_node_from_word(symbols," ");
+  map_node *end = symbols->stored_expressions->next;
   while (end){
     contents[code/4] = end->code;
     code += 4;

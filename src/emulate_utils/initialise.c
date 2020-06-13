@@ -5,9 +5,6 @@
 #include <assert.h>
 #include "initialise.h"
 
-#define num_of_registers 17
-#define memory_capacity 65536
-
 uint32_t *start_registers(void) {
   uint32_t *registers;
   registers = calloc(num_of_registers, 4);

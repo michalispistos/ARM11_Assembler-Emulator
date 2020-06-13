@@ -24,6 +24,4 @@ emulate: emulate.o
 
 assemble: assemble.o
 
-
-
-
+common_utils.o: common_utils.h

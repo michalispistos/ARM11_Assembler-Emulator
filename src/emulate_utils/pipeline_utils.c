@@ -2,10 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "pipeline_utils.h"
-
-// CONSTANTS TO HOLD REGISTER NUMBER OF PC AND CPSR
-#define PC 15
-#define CPSR 16
+#include "common_utils.h"
 
 // Enums that represent the bit positions of flags
 enum CPSRflag {
@@ -39,11 +36,6 @@ enum OpCodes {
     ORR = 12,
     MOV = 13,
 };
-
-// Creates a mask that will show the n LSBs
-uint32_t mask(int no_of_bits) {
-  return (1 << no_of_bits) - 1;
-}
 
 // Returns the of an instruction
 uint32_t condition(uint32_t instr) {
@@ -87,7 +79,7 @@ static uint32_t immediate_val(int operand2) {
 // Returns the result if operand2 interpreted as a register
 static uint32_t register_operand(int operand2, int S, uint32_t * registers, uint32_t * newC) {
   uint32_t result = registers[operand2 & mask(4)];
-  int carry;
+  int carry = 0;
 
   // The contents of register Rm is not modified.
   uint32_t shift = operand2 >> 4;

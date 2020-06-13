@@ -1,6 +1,8 @@
 #ifndef INITIALISE_H
 #define INITIALISE_H
 
+#define num_of_registers (17)
+#define memory_capacity (65536)
 
 uint32_t *start_registers(void);
 void free_registers(uint32_t *registers);

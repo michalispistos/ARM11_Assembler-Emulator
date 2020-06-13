@@ -2,11 +2,14 @@
 #define MAP_H
 
 #define MAX_WORD_LENGTH (511)
+#define MAX_INSTRUCTIONS (10)
 
 typedef struct Map_node map_node;
 
 typedef struct Map{
   map_node *header;
+  map_node *stored_expressions;
+  uint32_t end;
 } map;
 
 typedef uint32_t (*assemble_function) (map *symbols, char **tokens, int N, uint32_t code);
@@ -35,6 +38,9 @@ uint32_t get_code(const map* root, char* word);
 
 //sets code
 void set_code(map* root, char* word, uint32_t code);
+
+// adds item to end of a chain of nodes
+void add_map_node(map_node *node, const char *word, uint32_t code, assemble_function function);
 
 // Returns the first map element with same word
 // Returns NULL if this does not exist

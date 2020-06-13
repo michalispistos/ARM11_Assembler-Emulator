@@ -1,7 +1,7 @@
 CC      = gcc
-CFLAGS  = -Wall -g -std=c99 -Werror -pedantic -D_DEFAULT_SOURCE -O3
+CFLAGS  = -Wall -g -std=c99 -Werror -pedantic -D_DEFAULT_SOURCE -O3 -I..
 LIB     = libemulate_utils.a
-LIBOBJS = pipeline.o pipeline_utils.o initialise.o
+LIBOBJS = pipeline.o pipeline_utils.o initialise.o ../common_utils.o
 BUILD   = $(LIB)
 
 

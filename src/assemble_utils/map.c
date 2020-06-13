@@ -22,6 +22,7 @@ map *create_map(){
     exit(EXIT_FAILURE);
   }
   new_map->header = create_map_node();
+  new_map->stored_expressions = create_map_node();
   return new_map;
 }
 
@@ -53,6 +54,7 @@ void destroy_map_node(map_node *node){
 void destroy_map(map *elem){
   assert(elem);
   destroy_map_node(elem->header);
+  destroy_map_node(elem->stored_expressions);
   free(elem);
 }
 
