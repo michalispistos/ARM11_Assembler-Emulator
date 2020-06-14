@@ -11,7 +11,7 @@
 \subsection*{1. Structure and implementation of assembler}
 
 Our assembler consists of a main function in assemble.c which calls a series of functions which
-are defined in the library assemble_utils. 
+are defined in the library assemble{\_}utils. 
 
 To implement the assembler, we decided on using the two pass method with a map as the symbol table.
 Initially, when our map was only used to store label addresses and opcodes for instructions, each
@@ -23,7 +23,7 @@ In the first pass, we create the symbol table and add the addresses of each labe
 Before executing the second pass, we add every instruction that we support along with their
 respective opcodes and functions to the symbol table. We also add a pointer to the 'end' of the program
 which is used in single data transfer instructions where the expression is required to be stored at the 
-end of the assembly file if it is too large. The first pass is done in the function create_symbol_table.
+end of the assembly file if it is too large. The first pass is done in the function create{\_}symbol{\_}table.
 \par
 We then proceed to the second pass, in which we directly translate each assembly instruction into a 32 bit binary code.
 This is done by looking at the first word of each line which determines its instruction type by looking up through the 
@@ -35,13 +35,13 @@ these entries are added in a queue like manner to the end of the map which can b
 translating the original assembly code.
 \par
 In both the first pass and the second pass, we used the tokenizer function to parse the assembly files. The tokenizer
-created an array of character pointers (strings) from one line of assembly. For example "add r1 #2" would be split
-into ["add","r1","#2"]. In the second pass, we used the get function of our map on the first element of the array
+created an array of character pointers (strings) from one line of assembly. For example "add r1 \#2" would be split
+into ["add","r1","\#2"]. In the second pass, we used the get function of our map on the first element of the array
 returned by tokenizer to retrieve a function pointer so that we could pass the tokens to that function. We decided
-to do it this way with seperate assemble functions for each data type for two reasons. Firstly, this way everyone
-could work on a function each without interfering. Secondly, we thought that making it seperate would make our
-code more readable and easier to modifiy in the event we needed to make changes to it in the future. The results from
-the assemble_functions were then written to an array which then is written to a binary file by the function write_file.
+to do it this way with separate assemble functions for each data type for two reasons. Firstly, this way everyone
+could work on a function each without interfering. Secondly, we thought that making it separate would make our
+code more readable and easier to modify in the event we needed to make changes to it in the future. The results from
+the assemble{\_}functions were then written to an array which then is written to a binary file by the function write{\_}file.
 
 
 \\ \\
@@ -55,7 +55,12 @@ We mainly just used the provided test-suite for our testing as it was already qu
 \bigskip
 \subsection*{5. Group reflection}
 
-Anthony:
+Anthony: I believe our collaboration as a team for Part II has improved tremendously since Part I of the group project. Using VSCode 
+LiveShare to work on the project together was definitely effective, and I am very happy with my group as everyone is extremely 
+hardworking and motivated for the group project and we would work on the project for many hours every day. An improvement for 
+next time would be to talk about the structure of the whole project first, especially how the later parts will be implemented as 
+a problem we realized later is that we had to change the implementation of some of our code from earlier parts, so I think better 
+planning in advance instead of delving right into the implementation would be a good idea for next time. 
 
 Ezra: Team communication has definitely improved from the assembler section. As before, the use of VSCode LiveShare allowed multiple
 people to work on the same problem at the same time - effectively increasing the productivity of our group. This was done with the use
@@ -87,22 +92,28 @@ decreased the amount of time it took to complete the project. This is due to the
 have had were we to use git, and also because we were able to communicate in real time. For instance, this allowed us 
 to clarify parts of the specification and continue coding without delay as the live chat and voice chat is embedded
 into the platform. However, there is still some room for improvement. The most important thing that I think we could 
-improve on is to set miniture goals that we should aim to complete in a given time. I think this will be beneficial 
+improve on is to set miniature goals that we should aim to complete in a given time. I think this will be beneficial 
 as it will allow us to have more structure in the way we complete the project and we may be able to work faster if we
 have small achievable deadlines. Another important strategy that we should consider is to get some team members to work
 on later parts of the project instead of doing it sequentially from the beginning. The reason for this is that we had 
-to rewrite sections of our code to accomodate simpler functions in later parts of our code.  For example, we wrote the 
-map first but then we had to modifiy it once we got to a section of single data transfer. 
+to rewrite sections of our code to accommodate simpler functions in later parts of our code.  For example, we wrote the 
+map first but then we had to modify it once we got to a section of single data transfer. 
 
 \bigskip
 \subsection*{6. Individual reflection}
 
-Anthony:
+Anthony: This is the first time we have worked on a large programming group project, so I was scared about how we would be 
+able to split the group work evenly and effectively. However once we got on with the project we slowly gained experience 
+and we each day we would be more used to the aspect of working together as a group. A weakness I found for me was that it 
+takes me a while to get a grasp an idea and get started on how to implement an idea from the spec, but after I understand 
+the concept on the implementation, I am able to work through it. Another strength I found is my ability to spot bugs or 
+mistakes in code, which is a very tedious and time-consuming task. I am very happy that I got the experience to work in a 
+programming group project like this as it taught me how to work together in a team, and how to share and listen to each other.
 
 Ezra: I think the hardest part of group work is starting out with new people. Since the 4 of us have never undertaken a 
-large programming groupproject, and with the additional fact that none of us had programmed in C, it seemed like it would
+large programming group project, and with the additional fact that none of us had programmed in C, it seemed like it would
 be a very difficult task. Nevertheless, I think that our group worked very well together. I think one of my strengths was 
-communication and getting the group to start working in the beginning. Another strengh I think I have is thinking algorithmically - 
+communication and getting the group to start working in the beginning. Another strength I think I have is thinking algorithmically - 
 I think I was quite helpful when other group members were asking how to implement or fix something. 
 
 Michalis: Initially, when I learned about that group project I got pretty worried because I am a pretty shy person, which 
