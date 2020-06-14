@@ -7,6 +7,11 @@
 #include "assemble_instr.h"
 #include "common_utils.h"
 
+
+static uint32_t rotate_left(uint32_t word, int times){
+  return (word << times) | (word >> (31-times));
+}
+
 static int calculate_rotate_value(uint32_t word){
   for (int i = 0; i < 32; i += 2){
     if (rotate_left(word,i) <= mask(8)) return i;

@@ -1,92 +1,122 @@
 \documentclass[a4paper]{article}
 \usepackage[utf8]{inputenc}
-\usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
 
-\title{ARM Checkpoint}
-\author{Sarveen Santhiramohan (Group Leader) \\ Anthony Lee\\ Ezra Sitorus\\ Michalis Pistos}
+\title{ARM Final Report}
+\author{Sarveen Santhiramohan \\ Anthony Lee\\ Ezra Sitorus\\ Michalis Pistos}
 \date{May/June 2020}
 
 \begin{document}
 \maketitle
 
-\subsection*{1. Splitting the work and Coordination}
- We decided to split the project into separate parts that were not dependent on each other so we can have people
- working on different things simultaneously and save a lot of time. For example, to implement the execute function,
- we split it into functions for each instruction type as we could create these functions without much knowledge of how the other
- functions work. 
+\subsection*{1. Structure and implementation of assembler}
+
+Our assembler consists of a main function in assemble.c which calls a series of functions which
+are defined in the library assemble_utils. 
+
+To implement the assembler, we decided on using the two pass method with a map as the symbol table.
+Initially, when our map was only used to store label addresses and opcodes for instructions, each
+key (word) was mapped to an integer value (code) corresponding to the address or opcode of the key.
+However, at a later stage, we decided on adding another field for a function pointer so that instructions
+of different types could be mapped to the respective assemble functions in the second pass. 
+\par
+In the first pass, we create the symbol table and add the addresses of each label that we encounter.
+Before executing the second pass, we add every instruction that we support along with their
+respective opcodes and functions to the symbol table. We also add a pointer to the 'end' of the program
+which is used in single data transfer instructions where the expression is required to be stored at the 
+end of the assembly file if it is too large. The first pass is done in the function create_symbol_table.
+\par
+We then proceed to the second pass, in which we directly translate each assembly instruction into a 32 bit binary code.
+This is done by looking at the first word of each line which determines its instruction type by looking up through the 
+lookup table. We pass the entire line then to the appropriate function and outputs a 32 bit instruction that gets written 
+into the ouput file. Labels are ignored and when a single data transfer requires storing a large number we can use the end value 
+to find the last address of the instructions and place the new number there. This is done by adding a new element
+to the map with no string and the large number required as the integer code. If multiple numbers are added,
+these entries are added in a queue like manner to the end of the map which can be added once we finish 
+translating the original assembly code.
+\par
+In both the first pass and the second pass, we used the tokenizer function to parse the assembly files. The tokenizer
+created an array of character pointers (strings) from one line of assembly. For example "add r1 #2" would be split
+into ["add","r1","#2"]. In the second pass, we used the get function of our map on the first element of the array
+returned by tokenizer to retrieve a function pointer so that we could pass the tokens to that function. We decided
+to do it this way with seperate assemble functions for each data type for two reasons. Firstly, this way everyone
+could work on a function each without interfering. Secondly, we thought that making it seperate would make our
+code more readable and easier to modifiy in the event we needed to make changes to it in the future. The results from
+the assemble_functions were then written to an array which then is written to a binary file by the function write_file.
+
+
 \\ \\
- We used the LiveShare extension on VSCode to enable all group members to collaborate on the 
- project at the same time. This allowed us to work together on the same files, eliminating the need
- to continuously commit and push/pull the repository. It also has a built-in text and voice chat that made 
- discussing, editing and collaborating much simpler. This made it very convenient to work on the same functions
- as well, especially when debugging. 
-\\ \\
- Every team member was assigned to coding the execute function for one type of data instruction. Data Processing,
- Multiply, Single Data Transfer and Branch were coded by Sarveen, Anthony, Ezra and Michalis respectively.
- In addition, the binary loader and memory initialisation were made by Sarveen, Michalis and Anthony whilst 
- the register initialisation were made by Ezra. Michalis worked on making suitable Makefiles whilst Sarveen wrote the 
- function for the three-stage pipeline as well as the main function. Ezra also made the registerOperand function 
- to calculate the shifted registers. We all worked together on debugging which made it easier and quicker 
- to find the mistakes in our code.
+\bigskip
+\subsection*{2. Description of extension}
+\bigskip
+\subsection*{3. Design and challenges of extension}
+\bigskip
+\subsection*{4. Testing of implementation}
+We mainly just used the provided test-suite for our testing as it was already quite extensive. 
+\bigskip
+\subsection*{5. Group reflection}
+
+Anthony:
+
+Ezra: Team communication has definitely improved from the assembler section. As before, the use of VSCode LiveShare allowed multiple
+people to work on the same problem at the same time - effectively increasing the productivity of our group. This was done with the use
+of voice calls and text chat in the live coding sessions. Furthermore, we decided to do better planning before starting out our project. 
+The plan described the map data structure we would use as well as the general functioning of the assembler. We discussed various parts, such
+as whether to do a single-pass or two-pass method and how the symbol table would be implemented and used, in order to minimise unnecessary time
+discussing these things later as it would break up the flow of productivity. To add to this, we frequently tested small chunks of the program
+instead of leaving it all up to the very end. As a result, I would push to use a live sharing option for future
+group projects as well as a reasonable amount of time dedicated to planning the project as opposed to jumping straight in. However, our planning
+did not anticipate minute inconveniences in the project. Since we did the project sequentially, we often discovered problems or issues that affects
+some already completed section much later on. I think this problem could have been resolved if we split up and did sections in a non-linear fashion
+so that if such an issue appeared, this could be discussed by the group and be resolved quicker.
+
+Michalis: As I've said in the previous report I believe that our team worked incredibly well together. The fact that 
+we were using VSCode liveShare mode allowed us to help each other and learn a lot of things at the same time. 
+Moreover, I believe that in PartII we improved our communication compared to PartI. This had as a result work being
+done much quicker since we didn't have people working on the same tasks at the same time. Instead, 
+we decided to split all the tasks at the start so we can work independently and save a lot of time from repeated code.
+Finally, this group project was beneficial for me since it was my first major group project that took a couple of weeks of time 
+and taught me a lot of things about how a team should operate. The next time that I am requested to work with a group I will 
+definitely follow some of the tactics that we implemented on this project.First of all, I will make sure that we split the tasks 
+so we work more efficiently, but also give the required importance on communication. Since what I've seen from this project is that 
+communicating with each other constantly and informing every team member for each major change you've made is crucial in order to keep
+them updated and save everyone from unnecessary work.
+
+Sarveen: I think that our teamwork has improved further compared to the emulator phase of the project. I believe that
+by using our approach of live-coding at the same time as opposed to coding seperately and merging has significantly
+decreased the amount of time it took to complete the project. This is due to the lack of any serious conflicts we could
+have had were we to use git, and also because we were able to communicate in real time. For instance, this allowed us 
+to clarify parts of the specification and continue coding without delay as the live chat and voice chat is embedded
+into the platform. However, there is still some room for improvement. The most important thing that I think we could 
+improve on is to set miniture goals that we should aim to complete in a given time. I think this will be beneficial 
+as it will allow us to have more structure in the way we complete the project and we may be able to work faster if we
+have small achievable deadlines. Another important strategy that we should consider is to get some team members to work
+on later parts of the project instead of doing it sequentially from the beginning. The reason for this is that we had 
+to rewrite sections of our code to accomodate simpler functions in later parts of our code.  For example, we wrote the 
+map first but then we had to modifiy it once we got to a section of single data transfer. 
 
 \bigskip
-\subsection*{2. Teamwork}
+\subsection*{6. Individual reflection}
 
-Anthony: "I believe our group worked incredibly well together, and the implementation of using the LiveShare extension
-        on VSCode so we could collaborate in real-time really helped as this allowed us to continuously
-        contribute different ideas and ask questions where we were unsure, making it feel like a true collaborative project.
-        For the later tasks, I don't think much has to be changed as I believe this method was very efficient.
-\\ \\
-Ezra: "I am happy with the progress the team is making. Using VSCode has made it easier for everyone to chip in and 
-             contribute to various parts of the program. For later parts, maybe we could have a bit more discussion before coding."
-\\ \\
-Michalis: "I am really happy with my team. Everyone took this very seriously and contributed significantly so            
-we could achieve the desired outcome. Everyone was also really open to hear others' opinions, which helped us in choosing the optimal 
-solution and solving a problem faster. Moreover, working with others was very beneficial for me as I've learned a lot of
-new things. I don't think that there is something that needs changing as so far we are cooperating very well with each other."
-\\ \\
-Sarveen: "Everyone in our group has given the project maximum attention and worked tirelessly to ensure that our 
-emulator not only works but works well. No matter the complexity of the tasks, by working together we can overcome any challenge. Furthermore, the communication between the group members are always effective and efficient
-and this has allowed us to work on the project without any unnecessary delay."
+Anthony:
 
-\bigskip
-\subsection*{3. Structure of the Emulator and Useful Reusable Components for Part II}
+Ezra: I think the hardest part of group work is starting out with new people. Since the 4 of us have never undertaken a 
+large programming groupproject, and with the additional fact that none of us had programmed in C, it seemed like it would
+be a very difficult task. Nevertheless, I think that our group worked very well together. I think one of my strengths was 
+communication and getting the group to start working in the beginning. Another strengh I think I have is thinking algorithmically - 
+I think I was quite helpful when other group members were asking how to implement or fix something. 
 
-In our src directory we have a file called emulate.c containing the main function, 
-which loads the given binary file and executes the pipeline using the execute{\_}pipeline function. 
-Then we have created a sub-directory called emulate{\_}utils has the library containing all the functions needed
-for emulate. We have created and populated initialise.c with functions for initialising the memory and registers
-, as well as a function to load a given binary file into memory. Furthermore, we have a file called pipeline.c
-with functions to fetch, decode and execute instructions, and a file containing utility functions for pipeline
-called pipeline{\_}utils. Finally we have created two Makefiles: one for the emulate{\_}utils sub-directory where we create a library 
-and compile our files and then a Makefile for src where we use the the compiled version of the files from our library 
-to create an executable file for our program. Our emulator in Part I receives a binary file and executes the instructions, 
-while the assembler in part II takes in a .s file and converts it into a binary file so our emulator can read it. Our emulator 
-will be really useful for part II as we can use it to test whether the assembler has written to the file and processed
-the assembly instructions correctly. Furthermore, we can use the loadFile function from part I to read the instructions
-from the assembly file and store it in an array. We will need slight adjustments to the function, however, as the assembly
-instructions will not be in binary.
+Michalis: Initially, when I learned about that group project I got pretty worried because I am a pretty shy person, which 
+I thought would have a significant impact on my communication with the team. Moreover, I thought that I would have trouble 
+expressing my own opinions and ideas. On the other side, I consider myself a very organized person which I thought would 
+be a significant strength in a group project since I like putting tasks in order, focusing at one thing at a time and always 
+having a plan about what I am currently doing and what I want to do and achieve every day. However, after we started the 
+project thankfully my worries didn't come true. Thanks to my team and our chemistry I felt really relaxed
+from the start and I was always saying my opinion without thinking about it. On the other hand, one weakness
+that I discovered through this project is that sometimes I am too confident on my ideas and I really want them to get implemented. 
+However, I think that through this project  I learned to be more open to other ideas, understand when they are better than mine, 
+and promote them instead. Finally, one strength that I've discovered is my persistence to make things look good and consistent which 
+I believe is necessary in all group projects.
 
-\bigskip
-\subsection*{4 . Discussion on implementing difficult tasks in later parts}
-
-Anthony: "For the next part, we have to create an assembler to convert ARM assembly code into binary code. 
-               I believe what I will find difficult in this part is dealing with assembly language as this
-               is a fairly new topic for JMCs. Therefore what I think will help me is having a thorough 
-               understanding of computer architecture, and reading
-               the specification thoroughly to understand what it wants us to implement."
-\\ \\
-Ezra: "I think the difficult part of the assembler is the process of getting the various components in each assembly 
-            instruction. The conversion process seems to be similar to the execution process in the emulator."
-\\ \\
-Michalis: "I think I might face some difficulties in the later parts since we are asked to create an assembler. 
-This is a topic that I don't have much experience on as we've just learnt about them in our Architecture course. However, 
-I think discussing it with my team will help me understand the topic and what exactly we have to implement better."
-\\ \\
-Sarveen: "I think that the main difficulty with implementing the assembler is the function to tokenize the input
-and pass it to the correct assemble function for that input. We will try and solve this by using function pointers
-and data structures such as a hash table. It helps to have four minds working on this because, as we have
-observed during Part I, we are able to come up with solutions that are much better than something we could come up
-with individually."
-
+Sarveen: Prior to this project, I thought that it may be difficult to work in a group because of my lack of experience in teamwork. 
+However, communication and also co-ordination were both much better than I anticipated. 
 \end{document}
