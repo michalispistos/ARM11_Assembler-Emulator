@@ -2,12 +2,13 @@
 \usepackage[utf8]{inputenc}
 
 \title{ARM Final Report}
-\author{Sarveen Santhiramohan \\ Anthony Lee\\ Ezra Sitorus\\ Michalis Pistos}
+\author{Sarveen Santhiramohan (Group Leader) \\ Anthony Lee\\ Ezra Sitorus\\ Michalis Pistos}
 \date{May/June 2020}
 
 \begin{document}
 \maketitle
 
+\bigskip
 \subsection*{1. Structure and implementation of assembler}
 
 Our assembler consists of a main function in assemble.c which calls a series of functions which
@@ -17,7 +18,11 @@ To implement the assembler, we decided on using the two pass method with a map a
 Initially, when our map was only used to store label addresses and opcodes for instructions, each
 key (word) was mapped to an integer value (code) corresponding to the address or opcode of the key.
 However, at a later stage, we decided on adding another field for a function pointer so that instructions
-of different types could be mapped to the respective assemble functions in the second pass. 
+of different types could be mapped to the respective assemble functions in the second pass. Each map node holds
+these values as well as a pointer to the next node. The map structure is then composed of 2 different map node sets
+as well as an integer holding the value of the last instruction address. The first set of map nodes is for general 
+purpose, holding most of the instruction/label strings and code/location integers. The second is used in single data
+transfer instructions, when large values need to be stored.
 \par
 In the first pass, we create the symbol table and add the addresses of each label that we encounter.
 Before executing the second pass, we add every instruction that we support along with their
@@ -31,7 +36,7 @@ lookup table. We pass the entire line then to the appropriate function and outpu
 into the ouput file. Labels are ignored and when a single data transfer requires storing a large number we can use the end value 
 to find the last address of the instructions and place the new number there. This is done by adding a new element
 to the map with no string and the large number required as the integer code. If multiple numbers are added,
-these entries are added in a queue like manner to the end of the map which can be added once we finish 
+these entries are added in a queue-like manner to the end of the map which can be added once we finish 
 translating the original assembly code.
 \par
 In both the first pass and the second pass, we used the tokenizer function to parse the assembly files. The tokenizer
@@ -44,16 +49,31 @@ code more readable and easier to modify in the event we needed to make changes t
 the assemble{\_}functions were then written to an array which then is written to a binary file by the function write{\_}file.
 
 
-\\ \\
 \bigskip
-\subsection*{2. Description of extension}
 \bigskip
-\subsection*{3. Design and challenges of extension}
+
+\subsection*{2. Testing of implementation}
+We mainly just used the provided test-suite for our testing as it was already quite extensive, including many corner cases. 
+However, before our code reached the stage where we could use the given test suite to test it, we ran some test files individually 
+using the gcc command, to check for example if in Part I our code could initially read the binary file. We also did more frequent 
+tests of different parts of the program so that fixing would not be left to the very end. This was also quite helpful as we could
+rely on the part to perform (mostly) correct operations for other parts of the program that depended on it. 
+
+We also ran our program with gdb including the -g flag to spot errors in our code and help us debug it. When certain test cases failed,
+gdb was very useful to check if variables held the correct value. This also meant that we could pinpoint the specific line of code
+which made the program do the wrong operation.
+
+To check for memory leaks, we ran our code with Valgrind, using --leak-check=full and --show-leak-kinds=all flags 
+with the test files to ensure that we have freed everything that we have allocated memory to in the heap. We had an extensive Valgrind
+testing session towards the end to make sure that both our assembler and emulator were free of memory leaks.
+
+We made sure to test on both our own computers and also the lab machines in order to ensure that our program would not time out, even on
+slower computers. 
+
 \bigskip
-\subsection*{4. Testing of implementation}
-We mainly just used the provided test-suite for our testing as it was already quite extensive. 
 \bigskip
-\subsection*{5. Group reflection}
+
+\subsection*{3. Group reflection}
 
 Anthony: I believe our collaboration as a team for Part II has improved tremendously since Part I of the group project. Using VSCode 
 LiveShare to work on the project together was definitely effective, and I am very happy with my group as everyone is extremely 
@@ -61,7 +81,7 @@ hardworking and motivated for the group project and we would work on the project
 next time would be to talk about the structure of the whole project first, especially how the later parts will be implemented as 
 a problem we realized later is that we had to change the implementation of some of our code from earlier parts, so I think better 
 planning in advance instead of delving right into the implementation would be a good idea for next time. 
-
+\\ \\
 Ezra: Team communication has definitely improved from the assembler section. As before, the use of VSCode LiveShare allowed multiple
 people to work on the same problem at the same time - effectively increasing the productivity of our group. This was done with the use
 of voice calls and text chat in the live coding sessions. Furthermore, we decided to do better planning before starting out our project. 
@@ -73,19 +93,19 @@ group projects as well as a reasonable amount of time dedicated to planning the 
 did not anticipate minute inconveniences in the project. Since we did the project sequentially, we often discovered problems or issues that affects
 some already completed section much later on. I think this problem could have been resolved if we split up and did sections in a non-linear fashion
 so that if such an issue appeared, this could be discussed by the group and be resolved quicker.
-
-Michalis: As I've said in the previous report I believe that our team worked incredibly well together. The fact that 
+\\ \\
+Michalis: As I've said in the previous report, I believe that our team worked incredibly well together. The fact that 
 we were using VSCode liveShare mode allowed us to help each other and learn a lot of things at the same time. 
-Moreover, I believe that in PartII we improved our communication compared to PartI. This had as a result work being
+Moreover, I believe that in PartII we further improved our communication compared to PartI. This had as a result work being
 done much quicker since we didn't have people working on the same tasks at the same time. Instead, 
 we decided to split all the tasks at the start so we can work independently and save a lot of time from repeated code.
 Finally, this group project was beneficial for me since it was my first major group project that took a couple of weeks of time 
-and taught me a lot of things about how a team should operate. The next time that I am requested to work with a group I will 
-definitely follow some of the tactics that we implemented on this project.First of all, I will make sure that we split the tasks 
-so we work more efficiently, but also give the required importance on communication. Since what I've seen from this project is that 
-communicating with each other constantly and informing every team member for each major change you've made is crucial in order to keep
-them updated and save everyone from unnecessary work.
-
+and taught me a lot of things about how a team should operate efficiently. The next time that I am requested to work with a group I will 
+definitely follow some of the tactics that we implemented on this project. First of all, I will make sure that we split the tasks 
+so we work more efficiently, but also give the required importance on communication and feedback to each other. What I've seen from 
+this project is that communicating with each other constantly and informing every team member for each major change we've made 
+is crucial in order to keep them updated and save everyone from unnecessary work.
+\\ \\
 Sarveen: I think that our teamwork has improved further compared to the emulator phase of the project. I believe that
 by using our approach of live-coding at the same time as opposed to coding seperately and merging has significantly
 decreased the amount of time it took to complete the project. This is due to the lack of any serious conflicts we could
@@ -100,7 +120,9 @@ to rewrite sections of our code to accommodate simpler functions in later parts 
 map first but then we had to modify it once we got to a section of single data transfer. 
 
 \bigskip
-\subsection*{6. Individual reflection}
+\bigskip
+
+\subsection*{4. Individual reflection}
 
 Anthony: This is the first time we have worked on a large programming group project, so I was scared about how we would be 
 able to split the group work evenly and effectively. However once we got on with the project we slowly gained experience 
@@ -109,25 +131,32 @@ takes me a while to get a grasp an idea and get started on how to implement an i
 the concept on the implementation, I am able to work through it. Another strength I found is my ability to spot bugs or 
 mistakes in code, which is a very tedious and time-consuming task. I am very happy that I got the experience to work in a 
 programming group project like this as it taught me how to work together in a team, and how to share and listen to each other.
-
+\\ \\
 Ezra: I think the hardest part of group work is starting out with new people. Since the 4 of us have never undertaken a 
 large programming group project, and with the additional fact that none of us had programmed in C, it seemed like it would
 be a very difficult task. Nevertheless, I think that our group worked very well together. I think one of my strengths was 
 communication and getting the group to start working in the beginning. Another strength I think I have is thinking algorithmically - 
-I think I was quite helpful when other group members were asking how to implement or fix something. 
-
-Michalis: Initially, when I learned about that group project I got pretty worried because I am a pretty shy person, which 
-I thought would have a significant impact on my communication with the team. Moreover, I thought that I would have trouble 
-expressing my own opinions and ideas. On the other side, I consider myself a very organized person which I thought would 
-be a significant strength in a group project since I like putting tasks in order, focusing at one thing at a time and always 
+I think I was quite helpful when other group members were asking how to implement or fix something. I think one of my weaknesses is 
+taking too long in trying to do a single task that is difficult - looking back, I think it would be better for me to work on the parts 
+that may come after it and then work on the first problem with somebody else.
+\\ \\
+Michalis: Initially, when I learned about the group project I got pretty worried because I am a pretty shy person, which 
+I thought would have a significant impact on my communication with the team. Moreover, I thought that I wouldn't have the courage 
+to express my own opinions and ideas. On the other side, I consider myself a very organized person which I believe is 
+a significant strength in a group project, since I like putting tasks in order, focusing on one thing at a time and always 
 having a plan about what I am currently doing and what I want to do and achieve every day. However, after we started the 
 project thankfully my worries didn't come true. Thanks to my team and our chemistry I felt really relaxed
 from the start and I was always saying my opinion without thinking about it. On the other hand, one weakness
 that I discovered through this project is that sometimes I am too confident on my ideas and I really want them to get implemented. 
-However, I think that through this project  I learned to be more open to other ideas, understand when they are better than mine, 
-and promote them instead. Finally, one strength that I've discovered is my persistence to make things look good and consistent which 
-I believe is necessary in all group projects.
-
-Sarveen: Prior to this project, I thought that it may be difficult to work in a group because of my lack of experience in teamwork. 
-However, communication and also co-ordination were both much better than I anticipated. 
+However, I think that through this project I learned to be more open to other ideas, understand when they are better than mine or
+can complement my idea and promote the optimal one. Finally, one strength that I've discovered is my persistence to make all parts
+look good, uniform and consistent, which is necessary in all group projects.
+\\ \\
+Sarveen: Prior to this project, I thought that it may be difficult to work in a group because of my lack of experience in teamwork.
+I thought that my main weakness would be my communiation skills. However, it soon became apparent that there was no issue and I was able
+to both communicate my ideas well and also co-ordinate with others. One weakness that I did find to have was understanding certain
+details of the specification. For example, when it came to setting the CPSR flags for the emulator, I had to ponder over it for a long
+time before I was able to implement it. Although this was the case, I was able to spend less and less time as we worked through the 
+project and I was able to understand the specification for the assembler fairly quickly. One strength I think I have is my resilience as 
+I am able to keep working on a difficult problem until I solve it. 
 \end{document}
