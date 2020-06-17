@@ -65,10 +65,21 @@ which made the program do the wrong operation.
 
 To check for memory leaks, we ran our code with Valgrind, using --leak-check=full and --show-leak-kinds=all flags 
 with the test files to ensure that we have freed everything that we have allocated memory to in the heap. We had an extensive Valgrind
-testing session towards the end to make sure that both our assembler and emulator were free of memory leaks.
+testing session towards the end to make sure that both our assembler and emulator were free of memory leaks. We made sure to test on 
+both our own computers and also the lab machines in order to ensure that our program would not time out, even on slower computers. 
 
-We made sure to test on both our own computers and also the lab machines in order to ensure that our program would not time out, even on
-slower computers. 
+Finally, we created extra programs to test the functionality of our program. These extra tests also perform realistic applications. The
+first program - 4digitpalindrome - is a program to verify a simple number theory idea: all 4 digit palindromes are divisible by 11. We 
+verify this for the number 3443. This is done by dividing via repeated subtraction. We can observe that the reminder when divided by 11 is 0,
+which is the value stored in r0. The second program - factorial - builds on the factorial test case. We calculate 10! via repeated multiplication
+and also test out single data transfer by storing the result into 0x100 in memory. The next program is geometric - which calculates the geometric 
+series, using 2 as the ratio and store the result into memory as well. We use a counter (r5) to repeated multiply a value by 2, and keep adding 
+this to a sum (r4). The result is 63, which is $2^{6}-1$. This value is stored into memory as well. quotRem is similar to the quotRem function in 
+Haskell, we calculate the quotient and remainder when 163 is divided by 34. This program operates similarly to the 4digitpalindrome program, through 
+through repeated subtraction until a condition is satisfied (the 'remainder' is less than the divisor). r0 contains the remainder and r1 contains the 
+quotient. We can verify that the program is correct as 163 = 4 x 34 + 27. These values are stored into memory as well (consecutive words as well). 
+The final program is fibonacci, which we use to calculate the 21st fibonacci number via a naive algorithm using repeated addition. The result is then 
+stored into memory as well.
 
 \bigskip
 \bigskip
