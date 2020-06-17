@@ -44,11 +44,11 @@ void add_map(map *root, const char *word, uint32_t code, assemble_function funct
 }
 
 void destroy_map_node(map_node *node){
-  if (node->next) {
+ if (node->next) {
     destroy_map_node(node->next);
-    return;
-  }
-  free(node);
+ }
+ free(node);
+ 
 }
 
 void destroy_map(map *elem){

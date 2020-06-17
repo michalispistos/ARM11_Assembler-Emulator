@@ -54,6 +54,7 @@ uint32_t *second_pass(char* filename,map *symbols, int *num_of_instructions){
     line[strcspn(line,"\n")] = '\0';
     char **tokens = tokenizer(line, &N);
     if (is_label(tokens[0])){
+        free(tokens);
         continue;
     }
     assemble_function func = get_function(symbols,tokens[0]);

@@ -43,6 +43,7 @@ void load_file(uint32_t * memory, char * filename) {
     memory[i] = * word & 0xff;
     i++;
   }
+  free(word);
   fclose(file);
 }
 
