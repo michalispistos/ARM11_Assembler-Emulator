@@ -64,12 +64,13 @@ uint32_t *second_pass(char* filename,map *symbols, int *num_of_instructions){
     code += 4;
   }
   fclose(input);
+  contents = realloc(contents,symbols->end*sizeof(uint32_t));
   map_node *end = symbols->stored_expressions->next;
   while (end){
     contents[code/4] = end->code;
     code += 4;
     end = end->next;
   }
-  *num_of_instructions = code/4;
+  *num_of_instructions = (code/4);
   return contents;
 }

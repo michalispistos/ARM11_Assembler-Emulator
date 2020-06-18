@@ -184,7 +184,7 @@ uint32_t assemble_sdt(map *symbols, char **tokens, int N, uint32_t instr_address
       } else {
         // expression is too large and needs to be added to end
         res |= 15 << 16; //PC 
-        add_map_node(symbols->stored_expressions, " ", expression, NULL);
+        add_map_node(symbols->stored_expressions, " a", expression, NULL);
         int end = symbols->end;
         res |= (end) - (instr_address + 8); // OFFSET;
         end += 4;
@@ -274,7 +274,7 @@ res = res | (offset & mask(24));
   return res;
 }
 
-#define MAX_INSTRUCTION_LENGTH (5)
+#define MAX_INSTRUCTION_LENGTH (10)
 
 uint32_t assemble_special(map *symbols, char **tokens, int N, uint32_t code) {
 

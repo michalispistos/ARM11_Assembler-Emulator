@@ -32,6 +32,7 @@ void add_map_node(map_node *node, const char *word, uint32_t code, assemble_func
     return;
   }
   map_node *new_map_node = create_map_node();
+  assert(new_map_node);
   strcpy(new_map_node->word,word);
   new_map_node->code = code;
   new_map_node->function = function;
@@ -44,10 +45,19 @@ void add_map(map *root, const char *word, uint32_t code, assemble_function funct
 }
 
 void destroy_map_node(map_node *node){
+  /*
+  map_node* temp = node->next;
+  free(node);
+  if(temp){
+  destroy_map_node(temp);
+  }
+  */
  if (node->next) {
     destroy_map_node(node->next);
+    //free(node);
  }
  free(node);
+ 
  
 }
 

@@ -18,6 +18,7 @@ enum Commands {
 
 void write_file(uint32_t *contents,int num_of_instructions ,char *filename){
   FILE *output = fopen(filename,"wb");
+  assert(output);
   fwrite(contents,4,num_of_instructions,output);
   fclose(output);
   free(contents);
