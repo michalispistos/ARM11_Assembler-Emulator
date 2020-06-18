@@ -7,9 +7,11 @@
 #include "parser.h"
 #include "two_pass.h"
 
-map *create_symbol_table(char *filename){
-  FILE *input = fopen(filename,"r");
-  if (!input) {
+map *create_symbol_table(char *filename)
+{
+  FILE *input = fopen(filename, "r");
+  if (!input)
+  {
     perror("Error opening file");
     exit(EXIT_FAILURE);
   }
@@ -18,59 +20,69 @@ map *create_symbol_table(char *filename){
   uint32_t code = 0;
   int N;
   int end = 0;
-  while (fgets(line,MAX_WORD_LENGTH,input)){
+  while (fgets(line, MAX_WORD_LENGTH, input))
+  {
     N = 0;
-    if (!strcmp(line,"\n")) continue;
-    line[strcspn(line,"\n")] = '\0';
+    if (!strcmp(line, "\n"))
+      continue;
+    line[strcspn(line, "\n")] = '\0';
     char **tokens = tokenizer(line, &N);
-      if(is_label(tokens[0])){
-        tokens[0][strlen(tokens[0])-1] = '\0';
-        add_map(symbol_table,tokens[0],code,NULL); 
-      } else {
-        end +=4;
-        code +=4;
-      }
-      free(tokens);
+    if (is_label(tokens[0]))
+    {
+      tokens[0][strlen(tokens[0]) - 1] = '\0';
+      add_map(symbol_table, tokens[0], code, NULL);
     }
+    else
+    {
+      end += 4;
+      code += 4;
+    }
+    free(tokens);
+  }
   fclose(input);
   symbol_table->end = end;
   return symbol_table;
 }
 
-
-uint32_t *second_pass(char* filename,map *symbols, int *num_of_instructions){
-  uint32_t* contents = calloc(symbols->end/4,sizeof(uint32_t));
-  FILE *input = fopen(filename,"r");
-  if (!input) {
+uint32_t *second_pass(char *filename, map *symbols, int *num_of_instructions)
+{
+  uint32_t *contents = calloc(symbols->end / 4, sizeof(uint32_t));
+  FILE *input = fopen(filename, "r");
+  if (!input)
+  {
     perror("Error opening file");
     exit(EXIT_FAILURE);
   }
   char line[MAX_WORD_LENGTH];
   int N;
   uint32_t code = 0;
-  while (fgets(line,MAX_WORD_LENGTH,input)){
+  while (fgets(line, MAX_WORD_LENGTH, input))
+  {
     N = 0;
-    if (!strcmp(line,"\n")) continue;
-    line[strcspn(line,"\n")] = '\0';
+    if (!strcmp(line, "\n"))
+      continue;
+    line[strcspn(line, "\n")] = '\0';
     char **tokens = tokenizer(line, &N);
-    if (is_label(tokens[0])){
-        free(tokens);
-        continue;
+    if (is_label(tokens[0]))
+    {
+      free(tokens);
+      continue;
     }
-    assemble_function func = get_function(symbols,tokens[0]);
-    uint32_t result = (func)(symbols,tokens,N,code);
-    contents[code/4] = result;
+    assemble_function func = get_function(symbols, tokens[0]);
+    uint32_t result = (func)(symbols, tokens, N, code);
+    contents[code / 4] = result;
     free(tokens);
     code += 4;
   }
   fclose(input);
-  contents = realloc(contents,(symbols->end/4)*sizeof(uint32_t));
+  contents = realloc(contents, (symbols->end / 4) * sizeof(uint32_t));
   map_node *end = symbols->stored_expressions->next;
-  while (end){
-    contents[code/4] = end->code;
+  while (end)
+  {
+    contents[code / 4] = end->code;
     code += 4;
     end = end->next;
   }
-  *num_of_instructions = (code/4);
+  *num_of_instructions = (code / 4);
   return contents;
 }
