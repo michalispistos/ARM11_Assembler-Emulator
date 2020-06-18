@@ -39,7 +39,7 @@ map *create_symbol_table(char *filename){
 
 
 uint32_t *second_pass(char* filename,map *symbols, int *num_of_instructions){
-  uint32_t* contents = calloc(MAX_INSTRUCTIONS,sizeof(uint32_t));
+  uint32_t* contents = calloc(symbols->end/4,sizeof(uint32_t));
   FILE *input = fopen(filename,"r");
   if (!input) {
     perror("Error opening file");
@@ -64,7 +64,7 @@ uint32_t *second_pass(char* filename,map *symbols, int *num_of_instructions){
     code += 4;
   }
   fclose(input);
-  contents = realloc(contents,symbols->end*sizeof(uint32_t));
+  contents = realloc(contents,(symbols->end/4)*sizeof(uint32_t));
   map_node *end = symbols->stored_expressions->next;
   while (end){
     contents[code/4] = end->code;

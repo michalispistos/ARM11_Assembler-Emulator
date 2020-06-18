@@ -2,7 +2,7 @@
 #define MAP_H
 
 #define MAX_WORD_LENGTH (511)
-#define MAX_INSTRUCTIONS (10)
+#define MAX_INSTRUCTION_LENGTH (10)
 
 typedef struct Map_node map_node;
 

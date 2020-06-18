@@ -15,9 +15,9 @@ int main(int argc, char **argv) {
     perror("incorrect number of arguments.");
     exit(EXIT_FAILURE);
   }
+  int num_of_instructions = 0;
   map* res = create_symbol_table(argv[1]);
   pre_read_codes(res);
-  int num_of_instructions = 0;
   uint32_t *contents = second_pass(argv[1],res, &num_of_instructions);
   destroy_map(res);
   write_file(contents,num_of_instructions,argv[2]);

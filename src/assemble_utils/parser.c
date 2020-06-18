@@ -27,7 +27,7 @@ void write_file(uint32_t *contents,int num_of_instructions ,char *filename){
 
 char **tokenizer(char *line, int *N){
   // splits a given line into label, opcode, operand field;
-  char **tokens = calloc(MAX_INSTRUCTIONS,(sizeof (char *)));
+  char **tokens = calloc(MAX_INSTRUCTION_LENGTH,(sizeof (char *)));
   assert(tokens);
   char *rest = line;
   char* token;

@@ -274,8 +274,6 @@ res = res | (offset & mask(24));
   return res;
 }
 
-#define MAX_INSTRUCTION_LENGTH (10)
-
 uint32_t assemble_special(map *symbols, char **tokens, int N, uint32_t code) {
 
   if(!strcmp(tokens[0],"andeq")){
