@@ -20,44 +20,44 @@ static int calculate_rotate_value(uint32_t word)
     exit(EXIT_FAILURE);
 }
 
-int calculate(uint32_t word)
+int immediate(uint32_t word)
 {
     int rotateTimes = calculate_rotate_value(word);
     return ((rotateTimes / 2) << 8) | (word >> (32 - rotateTimes));
 }
 
-int get_value_from_token(char *registers)
+int get_value_from_token(char *token)
 {
-    if (registers[0] == '#' || registers[0] == '=')
+    if (token[0] == '#' || token[0] == '=')
     {
         // <#expression>
-        memmove(registers, registers + 1, strlen(registers));
+        memmove(token, token + 1, strlen(token));
         int res;
-        if (registers[0] == '0' && registers[1] == 'x')
+        if (token[0] == '0' && token[1] == 'x')
         {
             //hex
-            res = strtol(registers, NULL, 16);
+            res = strtol(token, NULL, 16);
         }
-        else if (registers[0] == '-' && registers[1] == '0' && registers[2] == 'x')
+        else if (token[0] == '-' && token[1] == '0' && token[2] == 'x')
         {
-            memmove(registers, registers + 1, strlen(registers));
-            res = -1 * strtol(registers, NULL, 16);
+            memmove(token, token + 1, strlen(token));
+            res = -1 * strtol(token, NULL, 16);
         }
         else
         {
             //decimal
-            res = strtol(registers, NULL, 10);
+            res = strtol(token, NULL, 10);
         }
         return res;
     }
-    else if (registers[0] == '[')
+    else if (token[0] == '[')
     {
         // if there is a square bracket this will remove
-        memmove(registers, registers + 1, strlen(registers));
+        memmove(token, token + 1, strlen(token));
     }
     //register
-    memmove(registers, registers + 1, strlen(registers));
-    int res = strtol(registers, NULL, 10);
+    memmove(token, token + 1, strlen(token));
+    int res = strtol(token, NULL, 10);
     return res;
 }
 

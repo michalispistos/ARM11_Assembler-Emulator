@@ -54,7 +54,7 @@ uint32_t * initialize_memory() {
   return memory;
 }
 
-void print_memory_hex(uint32_t * memory) {
+void print_memory(uint32_t * memory) {
   printf("Non-zero memory:\n");
   for (int i = 0; i < 2048; i++) {
     uint32_t base = 4 * i;

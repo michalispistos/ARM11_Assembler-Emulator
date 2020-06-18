@@ -40,13 +40,11 @@ enum OpCodes
     MOV = 13,
 };
 
-// Returns the of an instruction
 uint32_t condition(uint32_t instr)
 {
     return instr >> 28;
 }
 
-// Checks if the condition of a instruction is met
 int check_condition(uint32_t instr, uint32_t *registers)
 {
     uint32_t CPSR_val = registers[CPSR];
@@ -248,8 +246,7 @@ void execute_data_process(uint32_t *registers, uint32_t instr)
     }
 }
 
-// PC not used as an operand or destination register
-// Rd will not be equal to Rm
+
 void execute_multiply(uint32_t *registers, uint32_t instr)
 {
     int A = (instr >> 21) % 2;

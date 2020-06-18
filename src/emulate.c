@@ -8,6 +8,7 @@
 
 #define PC (15)
 
+//emulates ARM three stage pipeline 
 void emulate(uint32_t *registers, uint32_t *memory)
 {
   uint32_t instrA = 1; //fetching
@@ -17,7 +18,7 @@ void emulate(uint32_t *registers, uint32_t *memory)
 
   do
   {
-    if (counter > 1)
+    if (counter > 1) // counter to allow pipeline to fill
     {
       decoded = decode(instrB);
       if (decoded == 0)
@@ -56,7 +57,7 @@ int main(int argc, char **argv)
   emulate(registers, memory);
 
   print_registers(registers);
-  print_memory_hex(memory);
+  print_memory(memory);
 
   free_registers(registers);
   free_memory(memory);

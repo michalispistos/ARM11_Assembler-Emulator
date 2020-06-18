@@ -53,7 +53,7 @@ uint32_t assemble_data_process(map *symbols, char **tokens, int N, uint32_t code
   if (I || N == 3 || N == 4)
   {
     operand_two = get_value_from_token(tokens[operand_two_index]);
-    operand_two = calculate(operand_two);
+    operand_two = immediate(operand_two);
   }
   else
   {

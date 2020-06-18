@@ -67,12 +67,12 @@ void destroy_map_node(map_node *node)
   free(node);
 }
 
-void destroy_map(map *elem)
+void destroy_map(map *root)
 {
-  assert(elem);
-  destroy_map_node(elem->header);
-  destroy_map_node(elem->stored_expressions);
-  free(elem);
+  assert(root);
+  destroy_map_node(root->header);
+  destroy_map_node(root->stored_expressions);
+  free(root);
 }
 
 void set_code_node(map_node *node, char *word, uint32_t code)

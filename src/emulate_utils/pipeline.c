@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include "pipeline.h"
 #include "pipeline_utils.h"
+#include "common_utils.h"
 
 // Enum of possible commands in the ARM project
 enum Commands

@@ -26,7 +26,7 @@ struct Map_node
 //creates a map
 map *create_map();
 
-// Adds item to the front of the data structure
+//adds item to the front of the data structure
 void add_map(map *root, const char *word, uint32_t code, assemble_function function);
 
 //gets function
@@ -41,14 +41,14 @@ uint32_t get_code(const map *root, char *word);
 //sets code
 void set_code(map *root, char *word, uint32_t code);
 
-// adds item to end of a chain of nodes
+//adds item to end of a chain of nodes
 void add_map_node(map_node *node, const char *word, uint32_t code, assemble_function function);
 
-// Returns the first map element with same word
-// Returns NULL if this does not exist
+//returns the first map element with same word
+//returns NULL if this does not exist
 map_node *get_map_node_from_word(map *root, const char *word);
 
-// Destroys a map
+//destroys a map
 void destroy_map(map *elem);
 
 #endif
